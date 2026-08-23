@@ -64,6 +64,18 @@ struct Option(S, dt.Mutability M = dt.IMut) {
     if (this.some()) return Ret.make(somef(this.just));
     else return Ret.make();
   }
+
+  public Option!(O, N) join(O, dt.Mutability N = M)(Option!(O, N) function(S) somef) {
+    alias Ret = Option!(O, N);
+    if (this.some()) return somef(this.get());
+    else return Ret.make();
+  }
+
+  public Option!(O, N) join(O, dt.Mutability N = M)(Option!(O, N) delegate(S) somef) {
+    alias Ret = Option!(O, N);
+    if (this.some()) return somef(this.get());
+    else return Ret.make();
+  }
 }
 
 version(unittest) { private int twice(int i) {return (i << 1);} }
