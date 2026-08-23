@@ -14,13 +14,13 @@ struct CheckedStr(alias check) {
     this.txt = s;
   }
   
-  alias CSR = opts.Option!(Self);
+  alias CSR = opts.Option!(Self, dt.Mut);
   static CSR make(string s) {
     if (!check(s)) {
-      return CSR.makeNone();
+      return CSR.make();
     }
 
-    return CSR.makeSome(Self(s));
+    return CSR.make(Self(s));
   }
 
   alias Verdict = dt.Verdict;
@@ -54,6 +54,6 @@ unittest {
   alias AS = AlphaStr;
   AS.CSR csr = AS.make("a");
   
-  assert(csr.isSome());
-  assert(AS.make("1").isNone());
+  assert(csr.some());
+  assert(AS.make("1").none());
 }

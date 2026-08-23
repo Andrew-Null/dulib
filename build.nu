@@ -10,8 +10,8 @@ def main [opt: string] {
   let outpath = $"($selfdir)/bin/($opt).out"
   match $opt {
     "test" => {
-      dmd -main -unittest ...(gather $"($selfdir)/src" d) -of=$outpath
-      ./$outpath
+      dmd -main -color -unittest ...(gather $"($selfdir)/src" d) -of=($outpath)
+      ^($outpath)
     }
   }
 }

@@ -1,83 +1,95 @@
 module dulib.types.monads.option;
 import dulib.logic;
+import dt = dulib.types;
+
 
 private enum OpTag {
   Some,
   None,
 }
 
-struct Option(S) {
-  private OpTag tag;
-  private S some;
-  
-  private this(const bool because) in(!because) {
+struct Option(S, dt.Mutability M = dt.IMut) {
+  private dt.AsMut!(OpTag, M).Out tag;
+  private dt.AsMut!(S, M).Out just;
+
+  alias Self = Option!(S, M);
+
+  private pure this(const bool because) in(!because) {
     this.tag = OpTag.None;
   }
 
-  private this(const bool because, S data) in(because) {
+  private pure this(const bool because, S data) in(because) {
     this.tag = OpTag.Some;
-    this.some = data;
+    this.just = data;
   }
 
-  static public pure Option makeSome(S data) {
-    return Option!(S)(true, data);
+  static public pure Self make(S data) {
+    return Self(true, data);
   }
 
-  static public pure Option makeNone() {
-    return Option!(S)(false);
+  static public pure Self make() {
+    return Self(false);
   }
   
-  pure nothrow public void setNone() {
-    this.tag = OpTag.None;
+  static if (dt.isMut!(M)()) {
+    pure nothrow public void set() {
+      this.tag = OpTag.None;
+    }
+
+    pure nothrow public void set(S data) {
+      this.just = data;
+      this.tag = OpTag.Some;
+    }
   }
   
-  pure nothrow public void setSome(S data) {
-    this.some = data;
-    this.tag = OpTag.Some;
-  }
-  
-  pure nothrow public bool isSome() //would put contract on both, but concerned about endless recursion
-       out(s; s == !isNone()) do {
+  pure nothrow public bool some() //would put contract on both, but concerned about endless recursion
+       out(s; s == !none()) do {
     return this.tag == OpTag.Some;
   }
 
-  pure nothrow public bool isNone() {
+  pure nothrow public bool none() {
     return this.tag == OpTag.None;
   }
 
-  pure public S getSome() in (isSome()) {return this.some;}
+  pure public S get() in (this.some()) {return cast(S) this.just;}
 				 
-  public O match(O)(O function(S) somef, O function() nonef) {
-    if (this.isSome()) return somef(this.some);
-    return nonef();
+  public Option!(O, N) bind(O, dt.Mutability N = M)(O function(S) somef) {
+    alias Ret = Option!(O, N);
+    if (this.some()) return Ret.make(somef(this.get()));
+    else return Ret.make();
   }
 
-  public void match(void function(S) somef, void function() nonef) {
-    if (this.isSome()) somef(this.some);
-    else return nonef();
+  public Option!(O, N) bind(O, dt.Mutability N = M)(O delegate(S) somef) {
+    alias Ret = Option!(O, N);
+    if (this.some()) return Ret.make(somef(this.just));
+    else return Ret.make();
   }
 }
 
+version(unittest) { private int twice(int i) {return (i << 1);} }
 unittest {
+
   bool ert = true;
-  alias Opt = Option!(int);
-  auto a = Opt.makeNone();
-  assert(a.isNone());
+  alias Opt = Option!(int, dt.Mut);
+  auto a = Opt.make();
+  assert(a.none());
+  assert(a.bind(&twice).none());
 
   try {
-    a.getSome();
+    a.get();
     ert = false;
   } catch (Error ae) {
   }
   assert(ert);
 
-  a.setSome(1);
-  assert(a.isSome());
-  assert(a.getSome() == 1);
+  a.set(1);
+  assert(a.some());
+  assert(a.get() == 1);
+  assert(a.bind(&twice).get() == 2);
 
-  a.setNone();
+  a.set();
   try {
-    a.getSome();
+    a.get();
     ert = false;
   } catch (Error ae) {
   }
