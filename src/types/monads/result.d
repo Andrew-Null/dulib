@@ -56,3 +56,14 @@ unittest {
   assert(r.isError());
   assert(r.getError() == 1.0);
 }
+
+
+unittest {
+  alias Res = Result!(int, float, dt.IMut);
+
+  Res o = Res.okay(2);
+  Res e = Res.error(1.0);
+
+  assert(!(o.isError() || e.isOkay()));
+  assert(o.isOkay() && e.isError());
+}
