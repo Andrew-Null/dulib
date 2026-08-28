@@ -1,6 +1,6 @@
 module dulib.charify;
 
-import opts = dulib.optionals;
+import opts = dulib.types.monads.option;
 
 pragma(inline, true);
 nothrow pure bool isLower(char c) {

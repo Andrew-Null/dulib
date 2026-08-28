@@ -4,7 +4,6 @@ import sio = std.stdio;
 
 public import dulib.logic;
 public import dulib.paths;
-public import dulib.optionals;
 public import dulib.charify;
 
 
