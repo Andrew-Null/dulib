@@ -1,7 +1,7 @@
 #!/run/current-system/sw/bin/nu
 
 def gather [path: string, ext: string] {
-  return (~/Other/Programming/Nu/gather.nu $path $ext | from nuon)
+  return (^gather.nu $path $ext | from nuon)
 }
 
 const arg0 = path self;

@@ -5,8 +5,12 @@ public enum Verdict : bool {
   Failure = false
 }
 
-enum Mutability {
+public enum Mutability {
   Immutable, Mutable
+}
+
+public enum Triplean {
+  Yes, Maybe, No
 }
 
 enum Mutability IMut = Mutability.Immutable;

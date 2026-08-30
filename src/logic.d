@@ -6,6 +6,10 @@ bool imply(bool a, bool b) {
   return true;
 }
 
+T truthy(T)(bool b, T t, T f) {
+  return (b * t) + ((1 - b) * f);
+}
+
 unittest {
   assert(imply(false, false));
   assert(imply(false, true));

@@ -36,22 +36,22 @@ bool isResolved(string path) {
   return path == resolvePath(path);
 }
 
-alias PathStr = istr.CheckedStr!(sp.isValidPath);
-alias ResolvedStr = istr.CheckedStr!(isResolved);
-alias LocationStr = istr.CheckedStr!(sf.exists);
-alias FileStr = istr.CheckedStr!(isFile);
-alias DirStr = istr.CheckedStr!(isDir);
+alias Path = istr.CheckedStr!(sp.isValidPath);
+alias ResolvedPath = istr.CheckedStr!(isResolved);
+alias LocationPath = istr.CheckedStr!(sf.exists);
+alias FilePath = istr.CheckedStr!(isFile);
+alias DirPath = istr.CheckedStr!(isDir);
 
 unittest {
   bool ert = false;
   version(linux) {
     //assert(isFile("~/.bash_profile") | isFile("~/.zprofile"));
-    assert(PathStr.make("/this/is/a/nonsense/path").some());
-    assert(LocationStr.make("/usr").some());
+    assert(Path.make("/this/is/a/nonsense/path").some());
+    assert(LocationPath.make("/usr").some());
     assert(isFile("/etc/passwd"));
-    assert(FileStr.make("/etc/passwd").some());
+    assert(FilePath.make("/etc/passwd").some());
     assert(isDir("/home"));
-    assert(DirStr.make("/home").some());
+    assert(DirPath.make("/home").some());
     assert(sp.isValidPath("~/.vimrc"));
     string resPath = "~/../../etc/passwd";
     sio.writeln("[common.d]::[resolvePath(" ~ resPath ~ ")]: " ~ resolvePath(resPath));
