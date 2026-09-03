@@ -20,7 +20,7 @@ struct Argv {
   }
 
   private alias Con = dtmo.Option!(Argv);
-  public Con make(string[] argv) {
+  public static Con make(string[] argv) {
     enum Con FAIL = Con.make();
 
     if (argv.length == 0) return FAIL;

@@ -19,6 +19,13 @@ bool isDir(string dpath, bool doRes = false) {
   return false;
 }
 
+bool isLink(string lpath, bool doRes = false) {
+  if (doRes) lpath = resolvePath(lpath);
+  if (sf.exists(lpath)) return sf.isSymlink(lpath);
+  return false;
+}
+alias isSymlink = isLink;
+
 string resolvePath(string path) in(sp.isValidPath(path)) out(ret) {
   assert(sp.isValidPath(ret));
 } do {
@@ -41,6 +48,8 @@ alias ResolvedPath = istr.CheckedStr!(isResolved);
 alias LocationPath = istr.CheckedStr!(sf.exists);
 alias FilePath = istr.CheckedStr!(isFile);
 alias DirPath = istr.CheckedStr!(isDir);
+alias LinkPath = istr.CheckedStr!(isLink);
+alias SymlinkPath = LinkPath;
 
 unittest {
   bool ert = false;
