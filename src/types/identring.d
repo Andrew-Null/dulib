@@ -44,6 +44,8 @@ struct CheckedStr(alias check) {
 
     static assert(typ == bool.stringof);
   }
+
+  bool doubleCheck() { return check(this.txt); } //good for file system stuff or something that might change out from under you
 }
 
 alias AlphaStr = CheckedStr!(cify.isAlpha);
@@ -54,6 +56,6 @@ unittest {
   alias AS = AlphaStr;
   AS.CSR csr = AS.make("a");
   
-  assert(csr.some());
-  assert(AS.make("1").none());
+  assert(csr.isSome());
+  assert(AS.make("1").isNone());
 }

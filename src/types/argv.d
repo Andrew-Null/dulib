@@ -26,7 +26,7 @@ struct Argv {
     if (argv.length == 0) return FAIL;
 
     auto fpo = dp.FilePath.make(argv[0]);
-    if (fpo.none()) return FAIL;
+    if (fpo.isNone()) return FAIL;
 
     string[] ary = [];
     if (argv.length > 1) ary = argv[1..$];

@@ -42,20 +42,20 @@ struct Option(S, dt.Mutability M = dt.IMut) {
     }
   }
   
-  pure nothrow public bool some() //would put contract on both, but concerned about endless recursion
-       out(s; s == !none()) do {
+  pure nothrow public bool isSome() //would put contract on both, but concerned about endless recursion
+       out(s; s == !isNone()) do {
     return this.tag == OpTag.Some;
   }
 
-  pure nothrow public bool none() {
+  pure nothrow public bool isNone() {
     return this.tag == OpTag.None;
   }
 
-  pure public S get() in (this.some()) {return cast(S) this.just;}
+  pure public S get() in (this.isSome()) {return cast(S) this.just;}
 				 
   public Option!(O, N) bind(O, dt.Mutability N = M)(O function(S) somef) {
     alias Ret = Option!(O, N);
-    if (this.some()) return Ret.make(somef(this.get()));
+    if (this.isSome()) return Ret.make(somef(this.get()));
     else return Ret.make();
   }
 
@@ -84,8 +84,8 @@ unittest {
   bool ert = true;
   alias Opt = Option!(int, dt.Mut);
   auto a = Opt.make();
-  assert(a.none());
-  assert(a.bind(&twice).none());
+  assert(a.isNone());
+  assert(a.bind(&twice).isNone());
 
   try {
     a.get();
@@ -95,7 +95,7 @@ unittest {
   assert(ert);
 
   a.set(1);
-  assert(a.some());
+  assert(a.isSome());
   assert(a.get() == 1);
   assert(a.bind(&twice).get() == 2);
 
@@ -108,3 +108,11 @@ unittest {
   assert(ert);
 }
 
+unittest {
+  alias Opt = Option!(int,);
+  auto a = Opt.make(1);
+  assert(a.isSome());
+  assert(!a.isNone());
+  int got = a.get();
+  assert(got == 1);
+}

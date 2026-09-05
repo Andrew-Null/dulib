@@ -55,12 +55,12 @@ unittest {
   bool ert = false;
   version(linux) {
     //assert(isFile("~/.bash_profile") | isFile("~/.zprofile"));
-    assert(Path.make("/this/is/a/nonsense/path").some());
-    assert(LocationPath.make("/usr").some());
+    assert(Path.make("/this/is/a/nonsense/path").isSome());
+    assert(LocationPath.make("/usr").isSome());
     assert(isFile("/etc/passwd"));
-    assert(FilePath.make("/etc/passwd").some());
+    assert(FilePath.make("/etc/passwd").isSome());
     assert(isDir("/home"));
-    assert(DirPath.make("/home").some());
+    assert(DirPath.make("/home").isSome());
     assert(sp.isValidPath("~/.vimrc"));
     string resPath = "~/../../etc/passwd";
     sio.writeln("[common.d]::[resolvePath(" ~ resPath ~ ")]: " ~ resolvePath(resPath));
