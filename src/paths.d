@@ -75,15 +75,15 @@ struct FSEntry(dt.Mutability M = dt.Mutability.Immutable) {
   Entry entry;
 
   this(FilePath fp) {
-    this.entry = Entry.Left(fp);
+    this.entry = Entry.left(fp);
   }
 
   this(DirPath dp) {
-    this.entry = Entry.Middle(dp);
+    this.entry = Entry.middle(dp);
   }
 
   this(LinkPath lp) {
-    this.entry = Entry.Right(lp);
+    this.entry = Entry.right(lp);
   }
 
   alias Self = FSEntry!(M);
@@ -100,36 +100,35 @@ struct FSEntry(dt.Mutability M = dt.Mutability.Immutable) {
       return Con.make();
     }
 
-    // Hotter than links, but files and directories are a toss up
-    // So do this first as ignorance means I need to test links before files
-    auto dp = DirPath.make(entry.getText());
-    if (fp.isSome()) {
-      return Con.make(this(dp.get()));
-    }
-
-    //Not sure if links also count as files so check this cold path first
+    // MUST be first,
+    // symlinks can be confused for what they are linked to
     auto lp = LinkPath.make(entry.getText());
     if (lp.isSome()) {
-      return Con.make(this(lp.get()));
+      return Con.make(Self(lp.get()));
     }
 
-    // Fairly certain branch prediction is destroyed by this point
+    //Not sure which is more likely file or directory, going to guess files
     auto fp = FilePath.make(entry.getText());
     if (fp.isSome()) {
-      return Con.make(this(fp.get()));
+      return Con.make(Self(fp.get()));
+    }
+
+    auto dp = DirPath.make(entry.getText());
+    if (dp.isSome()) {
+      return Con.make(Self(dp.get()));
     }
 
     return Con.make();
   }
 
   static Self make(FilePath fp) {
-    return this(fp);
+    return Self(fp);
   }
   static Self make(DirPath dp) {
-    return this(dp);
+    return Self(dp);
   }
   static Self make(LinkPath lp) {
-    return this(lp);
+    return Self(lp);
   }
 
   public bool isFile() {
@@ -145,15 +144,22 @@ struct FSEntry(dt.Mutability M = dt.Mutability.Immutable) {
   }
 
   public FilePath getFile() in(this.isFile()) {
-    return this.getLeft();
+    return this.entry.getLeft();
   }
 
   public DirPath getDirectory() in(this.isDirectory()) {
-    return this.getMiddle();
+    return this.entry.getMiddle();
   }
 
   public LinkPath getLink() in(this.isLink()) {
-    return this.getRight();
+    return this.entry.getRight();
+  }
+
+  public string getPath() {
+    if (this.isFile()) return this.getFile().getText();
+    if (this.isDirectory()) return this.getDirectory().getText();
+    assert(this.isLink());
+    return this.getLink().getText();
   }
 }
 
@@ -161,7 +167,22 @@ FSEntry!(M).Con followLink(dt.Mutability M = dt.Mutability.Immutable)(LinkPath l
   return FSEntry!(M).make(sf.readlink(lp.getText()));
 }
 
+FSEntry!(M)[] directoryContents
+(dt.Mutability M = dt.Mutability.Immutable, sf.SpanMode SPAN = sf.SpanMode.shallow, bool FOLLOW = false)(DirPath dp) {
+  auto contents = sf.dirEntries(dp.getText(), SPAN, FOLLOW);
+  alias Ret = FSEntry!(M);
+  Ret[] ret = [];
+  foreach (entry; contents) {
+    auto temp = Ret.make(entry);
+    if (temp.isSome()) ret ~= temp.get();
+  }
+
+  return ret;
+}
+
+
 unittest {
+  enum bool PRINT = !true;
   bool ert = false;
   version(linux) {
     //assert(isFile("~/.bash_profile") | isFile("~/.zprofile"));
@@ -173,7 +194,22 @@ unittest {
     assert(DirPath.make("/home").isSome());
     assert(sp.isValidPath("~/.vimrc"));
     string resPath = "~/../../etc/passwd";
-    sio.writeln("[common.d]::[resolvePath(" ~ resPath ~ ")]: " ~ resolvePath(resPath));
+
+    if (PRINT) {
+      sio.writeln("[common.d]::[resolvePath(" ~ resPath ~ ")]: " ~ resolvePath(resPath));
+
+      auto home = DirPath.make(resolvePath("~"));
+      assert(home.isSome());
+      auto inhome = directoryContents(home.get());
+      foreach (mem; inhome) {
+        string kind = "";
+        if (mem.isFile()) kind ~= "File";
+        if (mem.isDirectory()) kind ~= "Dir";
+        if (mem.isLink()) kind ~= "Symlink";
+        sio.writeln(kind ~ " : " ~ mem.getPath());
+      }
+    }
+
   }
 
   assert("ab//cd"[2..4] == "//");
