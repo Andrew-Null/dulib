@@ -6,7 +6,7 @@ public enum Verdict : bool {
 }
 
 public enum Mutability {
-  Immutable, Mutable
+  Immutable, Constant, Mutable
 }
 
 public enum Triplean {
@@ -15,17 +15,27 @@ public enum Triplean {
 
 enum Mutability IMut = Mutability.Immutable;
 enum Mutability Mut = Mutability.Mutable;
+enum Mutability Const = Mutability.Constant;
 
 pure bool isIMut(Mutability m)() {
-  static if (m == IMut) return true;
-  else return false;
+  enum bool ret = m == IMut;
+  return ret;
 }
 
 pure bool isMut(Mutability m)() {
-  return !isIMut!(m)();
+  enum bool ret = m == Mut;
+  return ret;
+}
+
+pure bool isConst(Mutability m)() {
+  return !(isIMut!(m)() || isMut!(m)());
 }
 
 template AsMut(T, Mutability m) {
   static if (isMut!(m)()) alias Out = T;
-  else alias Out = const(T);
+  else static if (isIMut!(m)) alias Out = immutable(T);
+  else {
+    static assert(isConst!(m)());
+    alias Out = const(T);
+  }
 }

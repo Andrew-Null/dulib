@@ -8,7 +8,7 @@ private enum OpTag {
   None,
 }
 
-struct Option(S, dt.Mutability M = dt.IMut) {
+struct Option(S, dt.Mutability M = dt.Const) {
   private dt.AsMut!(OpTag, M).Out tag;
   private dt.AsMut!(S, M).Out just;
 

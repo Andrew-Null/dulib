@@ -196,7 +196,7 @@ unittest {
     string resPath = "~/../../etc/passwd";
 
     if (PRINT) {
-      sio.writeln("[common.d]::[resolvePath(" ~ resPath ~ ")]: " ~ resolvePath(resPath));
+      sio.writeln("[paths.d]::[resolvePath(" ~ resPath ~ ")]: " ~ resolvePath(resPath));
 
       auto home = DirPath.make(resolvePath("~"));
       assert(home.isSome());

@@ -32,7 +32,7 @@ struct CheckedStr(alias check) {
     return Verdict.Failure;
   }
 
-  string getText() {
+  const string getText() {
     return this.txt;
   }
 
