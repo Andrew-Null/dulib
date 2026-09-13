@@ -36,15 +36,15 @@ string resolvePath(bool ABS = true)(string path, lazy string base = sf.getcwd) i
     static if (ABS) {
       return sp.buildNormalizedPath(sp.expandTilde(path));
     } else {
-      string cat = base; //careful of lazy, call once
+      string cat = base; //careful of lazy, "call" once
 
       //might be worth extracting
-      if ((cat[cat.length -1] == "/") && (path[0] =="/")) {
+      if ((cat[cat.length - 1] == '/') && (path[0] == '/')) {
           cat ~= path[1..$];
-      } else if ((cat[cat.length -1] != "/") && (path[0] !="/")) {
+      } else if ((cat[cat.length -1] != '/') && (path[0] !='/')) {
           cat = cat ~ "/" ~ path;
       } else {
-        assert((cat[cat.length -1] == "/") ^ (path[0] =="/"));
+        assert((cat[cat.length -1] == '/') ^ (path[0] =='/'));
         cat ~= path;
       }
 
@@ -164,7 +164,11 @@ struct FSEntry(dt.Mutability M = dt.Mutability.Immutable) {
 }
 
 FSEntry!(M).Con followLink(dt.Mutability M = dt.Mutability.Immutable)(LinkPath lp) {
-  return FSEntry!(M).make(sf.readlink(lp.getText()));
+  string link = lp.getText;
+  return FSEntry!(M).make(
+      resolvePath!(false)(
+          sf.readLink(
+              link), sp.dirName(link)));
 }
 
 FSEntry!(M)[] directoryContents
@@ -182,7 +186,7 @@ FSEntry!(M)[] directoryContents
 
 
 unittest {
-  enum bool PRINT = !true;
+  enum bool PRINT = true;
   bool ert = false;
   version(linux) {
     //assert(isFile("~/.bash_profile") | isFile("~/.zprofile"));
@@ -207,6 +211,12 @@ unittest {
         if (mem.isDirectory()) kind ~= "Dir";
         if (mem.isLink()) kind ~= "Symlink";
         sio.writeln(kind ~ " : " ~ mem.getPath());
+        if (mem.isLink()) {
+          auto followed = followLink(mem.getLink());
+          pragma(msg, typeof(followed).stringof );
+          assert(followed.isSome());
+          sio.writeln("Followed link: " ~ followed.get().getPath());
+        }
       }
     }
 
