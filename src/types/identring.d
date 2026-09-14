@@ -52,10 +52,25 @@ alias AlphaStr = CheckedStr!(cify.isAlpha);
 alias SimpleStr = CheckedStr!(cify.isSimple);
 alias NatNumStr = CheckedStr!(cify.isNumber);
 
+struct CStr {
+  immutable(char)* str;
+  immutable(ulong) length;
+
+  this(string s) {
+    import ss = std.string;
+    this.length = s.length;
+    this.str = ss.toStringz(s);
+  }
+}
+
 unittest {
   alias AS = AlphaStr;
   AS.CSR csr = AS.make("a");
   
   assert(csr.isSome());
   assert(AS.make("1").isNone());
+
+  CStr cs = CStr("abc");
+  assert(cs.length == 3);
+  assert(cs.str[0] == 'a');
 }
