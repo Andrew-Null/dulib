@@ -186,7 +186,7 @@ FSEntry!(M)[] directoryContents
 
 
 unittest {
-  enum bool PRINT = true;
+  enum bool PRINT = !true;
   bool ert = false;
   version(linux) {
     //assert(isFile("~/.bash_profile") | isFile("~/.zprofile"));
@@ -213,7 +213,6 @@ unittest {
         sio.writeln(kind ~ " : " ~ mem.getPath());
         if (mem.isLink()) {
           auto followed = followLink(mem.getLink());
-          pragma(msg, typeof(followed).stringof );
           assert(followed.isSome());
           sio.writeln("Followed link: " ~ followed.get().getPath());
         }
