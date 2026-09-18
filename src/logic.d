@@ -1,6 +1,7 @@
 module dulib.logic;
 
 import st = std.traits;
+import sio = std.stdio;
 
 pragma(inline, true);
 bool imply(bool a, bool b) {
@@ -9,24 +10,41 @@ bool imply(bool a, bool b) {
 }
 
 
-pure T truthy(T)(bool b, T t, T f) {
-  static if (!st.isPointer!(T)) {
+T truthy(T)(bool b, T t, T f) {
+  static if (st.isPointer!(T)) {
+    //sio.writeln("b1");
+    static assert(T.sizeof == ulong.sizeof);
+    //also branchless
+    return cast(T)(((cast(ulong)t) * b) + ((cast(ulong)f) * !b));
+
+//  } else static if (T.sizeof == ulong.sizeof) {
+//    sio.writeln("b2");
+//    return cast(T)( ((cast(ulong)t) * b) + ((cast(ulong)f) * !b) );
+//
+//  } else static if (T.sizeof == uint.sizeof) {
+//    sio.writeln("b3");
+//    return cast(T)(((cast(uint)t) * b) + ((cast(uint)f) * !b));
+
+  } else {
+    //sio.writeln("b4");
+    static assert(!st.isPointer!(T));
     static assert(ulong.sizeof == (T*).sizeof);
     //branchless
     return *cast(T*)((cast(ulong)(&t) * b) + (cast(ulong)(&f) * !b));
-  } else {
-    static assert(st.isPointer!(T));
-    static assert(T.sizeof == ulong.sizeof);
-
-    //also branchless
-    return cast(T)(((cast(ulong)t) * b) + ((cast(ulong)f) * !b));
   }
 }
+
+version(unittest) {
+  T echo(T)(T v) {
+    sio.writeln(v);
+    return v;
+  }
+ }
 
 unittest {
   import dtmo = dulib.types.monads.option;
   import dtme = dulib.types.monads.either;
-  
+
   assert(imply(false, false));
   assert(imply(false, true));
   assert(!imply(true, false));
@@ -66,4 +84,7 @@ unittest {
 
   assert(res3.getLeft() == 5);
   assert(res4.getRight() == -5.0);
+
+  assert(truthy(true, &l, &r) == &l);
+  assert(truthy(false, &l, &r) == &r);
 }
