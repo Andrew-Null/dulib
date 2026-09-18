@@ -53,12 +53,16 @@ alias SimpleStr = CheckedStr!(cify.isSimple);
 alias NatNumStr = CheckedStr!(cify.isNumber);
 
 struct CStr {
-  immutable(char)* str;
-  immutable(ulong) length;
+  const(char)* str;
+  immutable(ulong) len;
+
+  @property int length() {
+    return cast(int)this.len;
+  }
 
   this(string s) {
     import ss = std.string;
-    this.length = s.length;
+    this.len = s.length;
     this.str = ss.toStringz(s);
   }
 }
