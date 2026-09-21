@@ -2,7 +2,6 @@ module dulib.paths;
 
 import sf = std.file;
 import sp = std.path;
-import sio = std.stdio;
 
 import istr = dulib.types.identring;
 import dt = dulib.types;
@@ -10,38 +9,38 @@ import dtmt = dulib.types.monads.trither;
 import dtmo = dulib.types.monads.option;
 
  
-bool isFile(string fpath, bool doRes = false) {
+@safe bool isFile(string fpath, bool doRes = false) {
   if (doRes) fpath = resolvePath(fpath);
   if (sf.exists(fpath)) return sf.isFile(fpath);
   return false;
 }
 
-bool isDir(string dpath, bool doRes = false) {
+@safe bool isDir(string dpath, bool doRes = false) {
   if (doRes) dpath = resolvePath(dpath);
   if (sf.exists(dpath)) return sf.isDir(dpath);
   return false;
 }
 
-bool isLink(string lpath, bool doRes = false) {
+@safe bool isLink(string lpath, bool doRes = false) {
   if (doRes) lpath = resolvePath(lpath);
   if (sf.exists(lpath)) return sf.isSymlink(lpath);
   return false;
 }
 alias isSymlink = isLink;
 
-bool isFileLink(string fl, bool dr = false) {
+@safe bool isFileLink(string fl, bool dr = false) {
   return isFile(fl, dr) && isLink(fl, dr);
 }
 
-bool isDirLink(string fl, bool dr = false) {
+@safe bool isDirLink(string fl, bool dr = false) {
   return isDir(fl, dr) && isLink(fl, dr);
 }
 
-bool isBrokenLink(string l, bool dr = false) {
+@safe bool isBrokenLink(string l, bool dr = false) {
   return isLink(l, dr) && !(isDir(l, dr) || isFile(l, dr));
 }
 
-bool isUnbrokenLink(string l, bool dr = false) {
+@safe bool isUnbrokenLink(string l, bool dr = false) {
   return !isBrokenLink(l, dr);
 }
 
@@ -203,6 +202,8 @@ FSEntry!(M)[] directoryContents
 
 
 unittest {
+  import sio = std.stdio;
+
   enum bool PRINT = true;
   bool ert = false;
   version(linux) {
