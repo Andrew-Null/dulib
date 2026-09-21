@@ -5,14 +5,19 @@ nULl______
 
 __LIBrary
 
+A very "creative" name I know
+
 # What
 A D library of various utilities ranging from common datatypes seen in
-functional languages (Option and Result as in Rust, Maybe and Either
+functional languages (Option and Result as in Rust, Maybe  and Either
 as seen in Idris and presumably Haskell), to non-throwing versions of
 capabilities already possessed by Phobos.
 
 Not to mention various utilities and types I want, or that better fit 
 the way I think.
+
+- Well actually not Maybe, not distinct enough from Option, where as
+  Result and Either can have different connotations/meanings
 
 
 # Caveats
