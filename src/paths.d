@@ -29,6 +29,22 @@ bool isLink(string lpath, bool doRes = false) {
 }
 alias isSymlink = isLink;
 
+bool isFileLink(string fl, bool dr = false) {
+  return isFile(fl, dr) && isLink(fl, dr);
+}
+
+bool isDirLink(string fl, bool dr = false) {
+  return isDir(fl, dr) && isLink(fl, dr);
+}
+
+bool isBrokenLink(string l, bool dr = false) {
+  return isLink(l, dr) && !(isDir(l, dr) || isFile(l, dr));
+}
+
+bool isUnbrokenLink(string l, bool dr = false) {
+  return !isBrokenLink(l, dr);
+}
+
 string resolvePath(bool ABS = true)(string path, lazy string base = sf.getcwd) in(sp.isValidPath(path)) out(ret) {
   assert(sp.isValidPath(ret));
 } do {
@@ -69,6 +85,7 @@ alias FilePath = istr.CheckedStr!(isFile);
 alias DirPath = istr.CheckedStr!(isDir);
 alias LinkPath = istr.CheckedStr!(isLink);
 alias SymlinkPath = LinkPath;
+alias UnbrokenLinkPath = istr.CheckedStr!(isUnbrokenLink);
 
 struct FSEntry(dt.Mutability M = dt.Mutability.Immutable) {
   alias Entry = dtmt.Trither!(FilePath, DirPath, LinkPath, M);
@@ -164,7 +181,7 @@ struct FSEntry(dt.Mutability M = dt.Mutability.Immutable) {
 }
 
 FSEntry!(M).Con followLink(dt.Mutability M = dt.Mutability.Immutable)(LinkPath lp) {
-  string link = lp.getText;
+  string link = lp.getText();
   return FSEntry!(M).make(
       resolvePath!(false)(
           sf.readLink(
@@ -186,7 +203,7 @@ FSEntry!(M)[] directoryContents
 
 
 unittest {
-  enum bool PRINT = !true;
+  enum bool PRINT = true;
   bool ert = false;
   version(linux) {
     //assert(isFile("~/.bash_profile") | isFile("~/.zprofile"));
@@ -207,14 +224,15 @@ unittest {
       auto inhome = directoryContents(home.get());
       foreach (mem; inhome) {
         string kind = "";
-        if (mem.isFile()) kind ~= "File";
-        if (mem.isDirectory()) kind ~= "Dir";
-        if (mem.isLink()) kind ~= "Symlink";
+        if (mem.isFile()) kind = "File";
+        if (mem.isDirectory()) kind = "Dir";
+        if (mem.isLink()) kind = "Symlink";
         sio.writeln(kind ~ " : " ~ mem.getPath());
         if (mem.isLink()) {
           auto followed = followLink(mem.getLink());
-          assert(followed.isSome());
-          sio.writeln("Followed link: " ~ followed.get().getPath());
+          if (followed.isSome()) {
+            sio.writeln("Followed link: " ~ followed.get().getPath());
+          } else sio.writeln(mem.getPath() ~ " is a broken link");
         }
       }
     }
