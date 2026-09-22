@@ -6,15 +6,17 @@ import dtmo = dulib.types.monads.option;
 import dt = dulib.types;
 import dl = dulib.logic;
 import dp = dulib.paths;
+import dtf = dulib.types.filesystem;
+
 alias Flagdex = dtmo.Option!(ulong);
 
 enum string[] HELP_FLAGS = ["-h", "--help", "-help", "help"];
 
 struct Argv {
-  const dp.FilePath exe;
+  const dtf.FilePath exe;
   const string[] args;
 
-  private this(dp.FilePath self, string[] argary) {
+  private this(dtf.FilePath self, string[] argary) {
     this.exe = self;
     this.args = argary;
   }
@@ -25,7 +27,7 @@ struct Argv {
 
     if (argv.length == 0) return FAIL;
 
-    auto fpo = dp.FilePath.make(argv[0]);
+    auto fpo = dtf.FilePath.make(argv[0]);
     if (fpo.isNone()) return FAIL;
 
     string[] ary = [];
