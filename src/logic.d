@@ -74,8 +74,8 @@ unittest {
   assert(res2.isNone());
 
   alias Ei = dtme.Either!(long, double);
-  Ei l = Ei.left(5);
-  Ei r = Ei.right(-5.0);
+  Ei l = Ei.makeLeft(5);
+  Ei r = Ei.makeRight(-5.0);
   Ei res3 = truthy(true, l, r);
   Ei res4 = truthy(false, l, r);
 

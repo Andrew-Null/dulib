@@ -32,15 +32,15 @@ struct Trither(L, M, R, dt.Mutability MU = dt.IMut) {
     this.data.middle = m;
   }
 
-  public static pure Self left(L l) {
+  public static pure Self makeLeft(L l) {
     return Self(l, Tag.Left);
   }
 
-  public static pure Self right(R r) {
+  public static pure Self makeRight(R r) {
     return Self(r);
   }
 
-  public static pure Self middle(M m) {
+  public static pure Self makeMiddle(M m) {
     return Self(m, true);
   }
 
@@ -90,7 +90,7 @@ struct Trither(L, M, R, dt.Mutability MU = dt.IMut) {
 unittest {
   alias Eith = Trither!(int, bool, float, dt.Mut);
 
-  Eith e = Eith.left(2);
+  Eith e = Eith.makeLeft(2);
   assert(e.isLeft());
   assert(!e.isMiddle());
   assert(!e.isRight());

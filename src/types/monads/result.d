@@ -13,12 +13,12 @@ struct Result(O, E, dt.Mutability M) {
     this.data = d;
   }
 
-  public static pure Self okay(O o) {
-    return Self(Data.left(o));
+  public static pure Self makeOkay(O o) {
+    return Self(Data.makeLeft(o));
   }
 
-  public static pure Self error(E e) {
-    return Self(Data.right(e));
+  public static pure Self makeError(E e) {
+    return Self(Data.makeRight(e));
   }
 
   public pure bool isOkay() {return this.data.isLeft();}
@@ -46,7 +46,7 @@ struct Result(O, E, dt.Mutability M) {
 unittest {
   alias Res = Result!(int, float, dt.Mut);
 
-  Res r = Res.okay(2);
+  Res r = Res.makeOkay(2);
   assert(r.isOkay());
   assert(!r.isError());
   assert(r.getOkay() == 2);
@@ -61,8 +61,8 @@ unittest {
 unittest {
   alias Res = Result!(int, float, dt.IMut);
 
-  Res o = Res.okay(2);
-  Res e = Res.error(1.0);
+  Res o = Res.makeOkay(2);
+  Res e = Res.makeError(1.0);
 
   assert(!(o.isError() || e.isOkay()));
   assert(o.isOkay() && e.isError());

@@ -26,11 +26,11 @@ struct Either(L, R, dt.Mutability M = dt.IMut) {
     this.data.right = r;
   }
 
-  public static pure Self left(L l) {
+  public static pure Self makeLeft(L l) {
     return Self(l, EiTag.Left);
   }
 
-  public static pure Self right(R r) {
+  public static pure Self makeRight(R r) {
     return Self(r);
   }
 
@@ -67,7 +67,7 @@ struct Either(L, R, dt.Mutability M = dt.IMut) {
 unittest {
   alias Eith = Either!(int, float, dt.Mut);
 
-  Eith e = Eith.left(2);
+  Eith e = Eith.makeLeft(2);
   assert(e.isLeft());
   assert(!e.isRight());
   assert(e.getLeft() == 2);

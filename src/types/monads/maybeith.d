@@ -30,15 +30,15 @@ struct MaybEith(L, R, dt.Mutability MU = dt.IMut) {
     this.tag = t;
   }
 
-  public static pure Self left(L l) {
+  public static pure Self makeLeft(L l) {
     return Self(l, Tag.Left);
   }
 
-  public static pure Self right(R r) {
+  public static pure Self makeRight(R r) {
     return Self(r);
   }
 
-  public static pure Self neither() {
+  public static pure Self makeNeither() {
     return Self(Tag.Neither);
   }
 
@@ -83,7 +83,7 @@ struct MaybEith(L, R, dt.Mutability MU = dt.IMut) {
 unittest {
   alias Eith = MaybEith!(int, float, dt.Mut);
 
-  Eith e = Eith.left(2);
+  Eith e = Eith.makeLeft(2);
   assert(e.isLeft());
   assert(!e.isNeither());
   assert(!e.isRight());

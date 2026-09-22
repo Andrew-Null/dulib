@@ -24,6 +24,10 @@ alias BrokenLinkPath = istr.CheckedStr!(dp.isBrokenLink);
 struct SymLink(dt.Mutability M = dt.Mutability.Immutable) {
   alias Link = dtmt.Trither!(FileLinkPath, DirLinkPath, BrokenLinkPath);
   Link link;
+
+  this(FileLinkPath flp) {
+    this.link = Link.left(flp);
+  }
 }
 
 struct FSEntry(dt.Mutability M = dt.Mutability.Immutable) {
@@ -31,15 +35,15 @@ struct FSEntry(dt.Mutability M = dt.Mutability.Immutable) {
   Entry entry;
 
   this(FilePath fp) {
-    this.entry = Entry.left(fp);
+    this.entry = Entry.makeLeft(fp);
   }
 
   this(DirPath dp) {
-    this.entry = Entry.middle(dp);
+    this.entry = Entry.makeMiddle(dp);
   }
 
   this(LinkPath lp) {
-    this.entry = Entry.right(lp);
+    this.entry = Entry.makeRight(lp);
   }
 
   alias Self = FSEntry!(M);
