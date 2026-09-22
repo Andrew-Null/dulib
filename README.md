@@ -32,9 +32,3 @@ the way I think.
 
 - Point 4 primarily affects anything to do with IO and the filesystem
 
-# AI
-Between the almost certain lack of D training data, D's (relatively) 
-odd generic syntax (!(T) instead of \<T\>), and a lack of overall 
-guiding functionality I suspect I would spend more time wrestling with 
-any AI on both syntax and trying to explain direction then if I just 
-wrote the code myself

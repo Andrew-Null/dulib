@@ -17,6 +17,14 @@ alias DirPath = istr.CheckedStr!(dp.isDir);
 alias LinkPath = istr.CheckedStr!(dp.isLink);
 alias SymlinkPath = LinkPath;
 alias UnbrokenLinkPath = istr.CheckedStr!(dp.isUnbrokenLink);
+alias FileLinkPath = istr.CheckedStr!(dp.isFileLink);
+alias DirLinkPath = istr.CheckedStr!(dp.isDirLink);
+alias BrokenLinkPath = istr.CheckedStr!(dp.isBrokenLink);
+
+struct SymLink(dt.Mutability M = dt.Mutability.Immutable) {
+  alias Link = dtmt.Trither!(FileLinkPath, DirLinkPath, BrokenLinkPath);
+  Link link;
+}
 
 struct FSEntry(dt.Mutability M = dt.Mutability.Immutable) {
   alias Entry = dtmt.Trither!(FilePath, DirPath, LinkPath, M);
