@@ -77,3 +77,25 @@ unittest {
   assert(e.isRight());
   assert(e.getRight() == 1.0);
 }
+
+unittest {
+  alias Eith = Either!(int, float, dt.Const);
+  Eith l = Eith.makeLeft(2);
+  Eith r = Eith.makeRight(4.5);
+  assert(l.isLeft());
+  assert(r.isRight());
+  int two = l.getLeft();
+  float four = r.getRight;
+
+}
+
+unittest {
+  alias Eith = Either!(int, float, dt.IMut);
+  Eith l = Eith.makeLeft(2);
+  Eith r = Eith.makeRight(4.5);
+  assert(l.isLeft());
+  assert(r.isRight());
+  int two = l.getLeft();
+  float four = r.getRight;
+
+}

@@ -57,15 +57,15 @@ struct Trither(L, M, R, dt.Mutability MU = dt.IMut) {
   }
 
   public pure L getLeft() in(this.isLeft()) {
-    return this.data.left;
+    return cast(L) this.data.left;
   }
 
   public pure M getMiddle() in(this.isMiddle()) {
-    return this.data.middle;
+    return cast(M) this.data.middle;
   }
 
   public pure R getRight() in(this.isRight()) {
-    return this.data.right;
+    return cast(R) this.data.right;
   }
 
   static if (dt.isMut!(MU)()) {

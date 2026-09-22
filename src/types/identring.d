@@ -14,7 +14,7 @@ struct CheckedStr(alias check) {
     this.txt = s;
   }
   
-  alias CSR = opts.Option!(Self, dt.Mut);
+  alias CSR = opts.Option!(Self, dt.Const);
   static CSR make(string s) {
     if (!check(s)) {
       return CSR.make();

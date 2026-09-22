@@ -129,6 +129,10 @@ struct FSEntry(dt.Mutability M = dt.Mutability.Immutable) {
     assert(this.isLink());
     return this.getLink().getText();
   }
+
+  public dtmo.Option!(LocationPath) getLocation() {
+    return LocationPath.make(this.getPath());
+  }
 }
 
 unittest {
