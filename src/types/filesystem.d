@@ -26,7 +26,15 @@ struct SymLink(dt.Mutability M = dt.Mutability.Immutable) {
   Link link;
 
   this(FileLinkPath flp) {
-    this.link = Link.left(flp);
+    this.link = Link.makeLeft(flp);
+  }
+
+  this(DirLinkPath dlp) {
+    this.link = Link.makeMiddle(dlp);
+  }
+
+  this(BrokenLinkPath blp) {
+    this.link = Link.makeRight(blp);
   }
 }
 
