@@ -38,7 +38,10 @@ alias isSymlink = isLink;
 }
 
 @safe bool isBrokenLink(string l, bool dr = false) {
-  return isLink(l, dr) && !(isDir(l, dr) || isFile(l, dr));
+  if (dr) l = resolvePath(l);
+  auto lp = dtf.LinkPath.make(l);
+  if (lp.isNone()) return false;
+  return followLink(lp.get()).isNone();
 }
 
 @safe bool isUnbrokenLink(string l, bool dr = false) {

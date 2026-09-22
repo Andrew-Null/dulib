@@ -2,6 +2,7 @@ module dulib.types.filesystem;
 
 import sf = std.file;
 import sp = std.path;
+import sio = std.stdio;
 
 import istr = dulib.types.identring;
 import dt = dulib.types;
@@ -22,6 +23,8 @@ alias DirLinkPath = istr.CheckedStr!(dp.isDirLink);
 alias BrokenLinkPath = istr.CheckedStr!(dp.isBrokenLink);
 
 struct SymLink(dt.Mutability M = dt.Mutability.Immutable) {
+  private alias Self = SymLink!(M);
+  alias Con = dtmo.Option!(Self);
   alias Link = dtmt.Trither!(FileLinkPath, DirLinkPath, BrokenLinkPath);
   Link link;
 
@@ -35,6 +38,37 @@ struct SymLink(dt.Mutability M = dt.Mutability.Immutable) {
 
   this(BrokenLinkPath blp) {
     this.link = Link.makeRight(blp);
+  }
+
+  static Con make(LinkPath lp) {
+    sio.writeln(1);
+    if (!lp.doubleCheck()) {
+      return Con.make();
+    }
+
+    const txt = lp.getText();
+    sio.writeln(txt ~ " 2");
+
+    // simpler to check this one first
+    auto blp = BrokenLinkPath.make(txt);
+    if (blp.isSome()) {
+      return Con.make(Self(blp.get()));
+    }
+    sio.writeln(txt ~ " 3");
+
+    auto dlp = DirLinkPath.make(txt);
+    if (dlp.isSome()) {
+      return Con.make(Self(dlp.get()));
+    }
+    sio.writeln(txt ~ " 4");
+
+    auto flp = FileLinkPath.make(txt);
+    if (flp.isSome()) {
+      return Con.make(Self(flp.get()));
+    }
+    sio.writeln(txt ~ " 5");
+
+    return Con.make();
   }
 }
 
@@ -165,6 +199,8 @@ unittest {
           if (followed.isSome()) {
             sio.writeln("Followed link: " ~ followed.get().getPath());
           } else sio.writeln(mem.getPath() ~ " is a broken link");
+
+          assert(SymLink!(dt.IMut).make(mem.getLink()).isSome());
         }
       }
     }
