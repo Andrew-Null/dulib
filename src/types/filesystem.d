@@ -28,6 +28,18 @@ struct SymLink(dt.Mutability M = dt.Mutability.Immutable) {
   alias Link = dtmt.Trither!(FileLinkPath, DirLinkPath, BrokenLinkPath);
   Link link;
 
+  pure bool isFile() {
+    return link.isLeft();
+  }
+
+  pure bool isDir() {
+    return link.isMiddle();
+  }
+
+  pure bool isBroken() {
+    return link.isRight();
+  }
+
   this(FileLinkPath flp) {
     this.link = Link.makeLeft(flp);
   }
@@ -40,6 +52,24 @@ struct SymLink(dt.Mutability M = dt.Mutability.Immutable) {
     this.link = Link.makeRight(blp);
   }
 
+  static Con make(string ls) {
+    auto lp = LinkPath.make(ls);
+    if (lp.isNone()) {
+      return Con.make();
+    }
+    return Self.make(lp.get());
+  }
+
+  static Con make(string lp) {
+    auto ln = LinkPath.make(lp);
+    if (ln.isNone()) return Con.make();
+    return Self.make(ln);
+  }
+  static Con make(LocationPath lp) {
+    auto ln = LinkPath.make(lp.getText());
+    if (ln.isNone()) return Con.make();
+    return Self.make(ln);
+  }
   static Con make(LinkPath lp) {
     sio.writeln(1);
     if (!lp.doubleCheck()) {
