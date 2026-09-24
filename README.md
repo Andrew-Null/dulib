@@ -30,5 +30,9 @@ the way I think.
    Windows support will be sparse/poor to non-existant
    
 
-- Point 4 primarily affects anything to do with IO and the filesystem
+- Point 4 primarily affects anything to do with IO and the filesystem 
+  (at least for the moment)
+- Regarding point 2 and 4 maybe some day I will make a distinction 
+  between platform independent and platform dependent in dulib's 
+  organization
 
