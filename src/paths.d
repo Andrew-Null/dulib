@@ -81,7 +81,9 @@ bool isResolved(string path) {
   return path == resolvePath(path);
 }
 
-dtf.FSEntry!(M).Con followLink(dt.Mutability M = dt.Mutability.Immutable)(dtf.LinkPath lp) {
+dtf.FSEntry!(M).Con followLink
+(dt.Mutability M = dt.Mutability.Immutable)
+(dtf.LinkPath lp) {
   string link = lp.getText();
   return dtf.FSEntry!(M).make(
       resolvePath!(false)(

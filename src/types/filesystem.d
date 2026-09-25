@@ -9,6 +9,7 @@ import dt = dulib.types;
 import dtmt = dulib.types.monads.trither;
 import dtmo = dulib.types.monads.option;
 import dp = dulib.paths;
+import dtmm = dulib.types.monads.maybeith;
 
 alias Path = istr.CheckedStr!(sp.isValidPath);
 alias ResolvedPath = istr.CheckedStr!(dp.isResolved);
@@ -27,6 +28,25 @@ struct SymLink(dt.Mutability M = dt.Mutability.Immutable) {
   alias Con = dtmo.Option!(Self);
   alias Link = dtmt.Trither!(FileLinkPath, DirLinkPath, BrokenLinkPath);
   Link link;
+
+  pure string linkPath() {
+    if (link.isLeft()) return link.getLeft().getText();
+    if (link.isMiddle()) return link.getMiddle().getText();
+    assert(link.isRight());
+    return link.getRight().getText();
+  }
+
+  dtmo.Option!(string) targetPath() in(!link.isRight()) {
+    alias Ret = typeof(return);
+
+    auto lpo = LinkPath.make(this.linkPath());
+    if (lpo.isNone()) return Ret.make();
+
+    auto fseo = dp.followLink(lpo.get());
+    if (fseo.isNone()) return Ret.make();
+
+    return Ret.make(fseo.get().getPath());
+  }
 
   pure bool isFile() {
     return link.isLeft();
@@ -60,43 +80,33 @@ struct SymLink(dt.Mutability M = dt.Mutability.Immutable) {
     return Self.make(lp.get());
   }
 
-  static Con make(string lp) {
-    auto ln = LinkPath.make(lp);
-    if (ln.isNone()) return Con.make();
-    return Self.make(ln);
-  }
   static Con make(LocationPath lp) {
     auto ln = LinkPath.make(lp.getText());
     if (ln.isNone()) return Con.make();
-    return Self.make(ln);
+    return Self.make(ln.get());
   }
   static Con make(LinkPath lp) {
-    sio.writeln(1);
     if (!lp.doubleCheck()) {
       return Con.make();
     }
 
     const txt = lp.getText();
-    sio.writeln(txt ~ " 2");
 
     // simpler to check this one first
     auto blp = BrokenLinkPath.make(txt);
     if (blp.isSome()) {
       return Con.make(Self(blp.get()));
     }
-    sio.writeln(txt ~ " 3");
 
     auto dlp = DirLinkPath.make(txt);
     if (dlp.isSome()) {
       return Con.make(Self(dlp.get()));
     }
-    sio.writeln(txt ~ " 4");
 
     auto flp = FileLinkPath.make(txt);
     if (flp.isSome()) {
       return Con.make(Self(flp.get()));
     }
-    sio.writeln(txt ~ " 5");
 
     return Con.make();
   }
@@ -225,12 +235,18 @@ unittest {
         if (mem.isLink()) kind = "Symlink";
         sio.writeln(kind ~ " : " ~ mem.getPath());
         if (mem.isLink()) {
-          auto followed = dp.followLink(mem.getLink());
-          if (followed.isSome()) {
-            sio.writeln("Followed link: " ~ followed.get().getPath());
-          } else sio.writeln(mem.getPath() ~ " is a broken link");
+          //auto followed = dp.followLink(mem.getLink());
+          //if (followed.isSome()) {
+          //  sio.writeln("Followed link: " ~ followed.get().getPath());
+          //} else sio.writeln(mem.getPath() ~ " is a broken link");
 
-          assert(SymLink!(dt.IMut).make(mem.getLink()).isSome());
+          auto slo = SymLink!(dt.IMut).make(mem.getLink());
+          assert(slo.isSome());
+          auto sl = slo.get();
+          if (sl.isFile()) sio.writeln(sl.linkPath() ~ " is a link to a file " ~ sl.targetPath().get());
+          if (sl.isDir()) sio.writeln(sl.linkPath() ~ " is a link to a directory " ~ sl.targetPath().get());
+          if (sl.isBroken()) sio.writeln(sl.linkPath() ~ " is a broken link that leads no where");
+
         }
       }
     }
