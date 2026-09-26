@@ -5,13 +5,31 @@ import sio = std.stdio;
 import dt = dulib.types;
 import cify = dulib.charify;
 import opts = dulib.types.monads.option;
+import dl = dulib.logic;
 
-struct CheckedStr(alias check) {
+struct CheckedStr(alias check, bool MOCK = false) {
   alias Self = CheckedStr!(check);
+  static assert(dl.imply(MOCK, dl.isUnittest()));
+
   private string txt;
+  version(unittest) {
+    immutable(bool) mocked;
+
+    pure private this(string s, bool m) {
+      this.txt = s;
+      this.mocked = m;
+    }
+
+    static pure Self mock(string s) {
+      return Self(s, true);
+    }
+  }
+
+
 
   pure private this(string s) {
     this.txt = s;
+    version(unittest) mocked = false;
   }
   
   alias CSR = opts.Option!(Self, dt.Const);
@@ -37,8 +55,12 @@ struct CheckedStr(alias check) {
   }
 
   invariant {
-    assert(check(this.txt));
-    
+    static if (MOCK) {
+      assert(dl.imply(!this.mocked, check(this.txt)));
+    } else {
+      assert(check(this.txt));
+    }
+
     auto bl = check("");
     immutable string typ = typeof(bl).stringof;
 

@@ -212,7 +212,7 @@ struct FSEntry(dt.Mutability M = dt.Mutability.Immutable) {
 unittest {
   import sio = std.stdio;
 
-  enum bool PRINT = true;
+  enum bool PRINT = !true;
   bool ert = false;
   version(linux) {
     //assert(isFile("~/.bash_profile") | isFile("~/.zprofile"));

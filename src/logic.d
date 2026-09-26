@@ -9,6 +9,11 @@ bool imply(bool a, bool b) {
   return true;
 }
 
+bool isUnittest() pure {
+  version(unittest) return true;
+  return false;
+}
+
 
 T truthy(T)(bool b, T t, T f) {
   static if (st.isPointer!(T)) {
@@ -87,4 +92,6 @@ unittest {
 
   assert(truthy(true, &l, &r) == &l);
   assert(truthy(false, &l, &r) == &r);
+
+  assert(isUnittest());
 }
