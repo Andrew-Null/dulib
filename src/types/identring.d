@@ -8,11 +8,12 @@ import opts = dulib.types.monads.option;
 import dl = dulib.logic;
 
 struct CheckedStr(alias check, bool MOCK = false) {
-  alias Self = CheckedStr!(check);
+  alias Self = CheckedStr!(check, MOCK);
   static assert(dl.imply(MOCK, dl.isUnittest()));
 
   private string txt;
   version(unittest) {
+    //Mocking capabilities only exist/are payed for when unittesting
     immutable(bool) mocked;
 
     pure private this(string s, bool m) {
@@ -22,6 +23,10 @@ struct CheckedStr(alias check, bool MOCK = false) {
 
     static pure Self mock(string s) {
       return Self(s, true);
+    }
+
+    static if (!MOCK) {
+      alias Mockable = CheckedStr!(check, true);
     }
   }
 
@@ -99,4 +104,9 @@ unittest {
   CStr cs = CStr("abc");
   assert(cs.length == 3);
   assert(cs.str[0] == 'a');
+
+  alias ASM = AS.Mockable;
+  assert(ASM.make("123").isNone());
+  ASM nums = ASM.mock("123");
+  assert(!nums.doubleCheck());
 }
