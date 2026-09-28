@@ -44,21 +44,14 @@ struct Argv {
     return this.args.length + 1;
   }
 
-  public Flagdex findFlag(bool P = false)(string f) {
+  public Flagdex findFlag(string f) {
     alias PreRet = dtmo.Option!(ulong, dt.Mutability.Mutable);
-    static if (P) {
-      import sp = std.parallelism;
-      dtmo.Option!(bool)[this.argc.length] checks;
+    dtmo.Option!(bool)[] checks;
 
-      foreach (dex, arg; sp.parallel(this.args)) {
-          checks[dex] = dtmo.Option!(bool)(arg == f);
-        }
-
-      foreach (dex, chk; checks) {
-        if (chk.get()) return Flagdex.some(dex);
-      }
-
-      return Flagdex.none();
+    foreach (dex, arg; this.args) {
+      if (arg == f) return Flagdex.make(dex);
     }
+
+    return Flagdex.make();
   }
 }
