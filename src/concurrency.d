@@ -2,7 +2,8 @@ import sc = std.concurrency;
 
 import dtmo = dulib.types.monads.option;
 
-struct Tiddress(dtmo.Option!(bool) RTID = dtmo.Option!(bool).make()) {
+private alias HasRet = dtmo.Option!(bool);
+struct Tiddress(HasRet RTID = HasRet.make()) {
   sc.Tid src, dst;
   alias Self = Tiddress!(RTID);
   static if (RTID.isNone()) {
@@ -37,6 +38,14 @@ struct Tiddress(dtmo.Option!(bool) RTID = dtmo.Option!(bool).make()) {
 }
 
 unittest {
-  alias Tdrs = Tiddress!();
-  Tdrs t = Tdrs(sc.thisTid(), sc.thisTid());
+  sc.Tid here = sc.thisTid();
+  alias None = Tiddress!();
+  None two = None(here, here);
+  None three = None(here, here, here);
+
+  alias True = Tiddress!(HasRet.make(true));
+  True tru = True(here, here, here);
+
+  alias False = Tiddress!(HasRet.make(false));
+  False fls = False(here, here);
 }
