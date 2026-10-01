@@ -22,6 +22,24 @@ struct Tiddress(HasRet RTID = HasRet.make()) {
       this.ret = RTid.make();
     }
 
+    pure dtmo.Option!(Tiddress!(HasRet.make(B))) tryHarden(bool B)() {
+      alias Neo = Tiddress!(HasRet.make(B));
+      alias Ret = typeof(return);
+      if (this.ret.isSome() ^ B) {
+        return Ret.make();
+      }
+      assert(this.ret.isSome() == B);
+      static if (B) {
+        assert(ret.isSome());
+        return Ret.make(Neo(this.src, this.dst, this.ret.get()));
+
+      } else {
+        assert(ret.isNone());
+        return Ret.make(Neo(this.src, this.dst));
+      }
+
+    }
+
   } else static if (RTID.get()) {
     sc.Tid ret;
     pure this(sc.Tid s, sc.Tid d, sc.Tid r) {
@@ -44,8 +62,22 @@ unittest {
   None three = None(here, here, here);
 
   alias True = Tiddress!(HasRet.make(true));
-  True tru = True(here, here, here);
+  auto tru2 = two.tryHarden!(true)();
+  assert(tru2.isNone());
+
+  auto tru3 = three.tryHarden!(true)();
+  assert(tru3.isSome());
+
+
 
   alias False = Tiddress!(HasRet.make(false));
-  False fls = False(here, here);
+
+  auto fls2 = two.tryHarden!(false)();
+  assert(fls2.isSome());
+
+  auto fls3 = three.tryHarden!(false)();
+  assert(fls3.isNone());
+
+  True tru = tru3.get();
+  False fls = fls2.get();
 }
