@@ -11,6 +11,7 @@ import dtmo = dulib.types.monads.option;
 import dp = dulib.paths;
 import dtmm = dulib.types.monads.maybeith;
 
+
 alias Path = istr.CheckedStr!(sp.isValidPath);
 alias ResolvedPath = istr.CheckedStr!(dp.isResolved);
 alias LocationPath = istr.CheckedStr!(sf.exists);
@@ -22,6 +23,18 @@ alias UnbrokenLinkPath = istr.CheckedStr!(dp.isUnbrokenLink);
 alias FileLinkPath = istr.CheckedStr!(dp.isFileLink);
 alias DirLinkPath = istr.CheckedStr!(dp.isDirLink);
 alias BrokenLinkPath = istr.CheckedStr!(dp.isBrokenLink);
+
+//alias Path(bool MOCK = false) = istr.CheckedStr!(sp.isValidPath, MOCK);
+//alias ResolvedPath(bool MOCK = false) = istr.CheckedStr!(dp.isResolved, MOCK);
+//alias LocationPath(bool MOCK = false) = istr.CheckedStr!(sf.exists, MOCK);
+//alias FilePath(bool MOCK = false) = istr.CheckedStr!(dp.isFile, MOCK);
+//alias DirPath(bool MOCK = false) = istr.CheckedStr!(dp.isDir, MOCK);
+//alias LinkPath(bool MOCK = false) = istr.CheckedStr!(dp.isLink, MOCK);
+//alias SymlinkPath(bool MOCK = false) = LinkPath;
+//alias UnbrokenLinkPath(bool MOCK = false) = istr.CheckedStr!(dp.isUnbrokenLink, MOCK);
+//alias FileLinkPath(bool MOCK = false) = istr.CheckedStr!(dp.isFileLink, MOCK);
+//alias DirLinkPath(bool MOCK = false) = istr.CheckedStr!(dp.isDirLink, MOCK);
+//alias BrokenLinkPath(bool MOCK = false) = istr.CheckedStr!(dp.isBrokenLink, MOCK);
 
 struct SymLink(dt.Mutability M = dt.Mutability.Immutable) {
   private alias Self = SymLink!(M);

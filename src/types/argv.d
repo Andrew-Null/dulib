@@ -12,22 +12,44 @@ alias Flagdex = dtmo.Option!(ulong);
 
 enum string[] HELP_FLAGS = ["-h", "--help", "-help", "help"];
 
-struct Argv {
-  const dtf.FilePath exe;
+enum FindFlagMode {
+  Once, First, Count, Nth
+}
+private alias FFM = FindFlagMode;
+
+private template FFOut(FindFlagMode FF) { // FindFlagOut
+  static if (FF == FFM.Count) alias Out = ulong;
+
+}
+
+struct Argv(bool MOCK = false) {
+  alias Self = Argv!(MOCK);
+  static assert(dl.imply(MOCK, dl.isUnittest));
+  static if (dl.isUnittest() && MOCK) {
+    alias Exe = dtf.FilePath.Mockable;
+
+    public static Self mock(string e, string[] args) {
+      return Self(Exe.mock(e), args);
+    }
+
+  } else {
+    alias Exe = dtf.FilePath;
+  }
+  const Exe exe;
   const string[] args;
 
-  private this(dtf.FilePath self, string[] argary) {
+  private this(Exe self, string[] argary) {
     this.exe = self;
     this.args = argary;
   }
 
-  private alias Con = dtmo.Option!(Argv);
+  private alias Con = dtmo.Option!(Self);
   public static Con make(string[] argv) {
     enum Con FAIL = Con.make();
 
     if (argv.length == 0) return FAIL;
 
-    auto fpo = dtf.FilePath.make(argv[0]);
+    auto fpo = Exe.make(argv[0]);
     if (fpo.isNone()) return FAIL;
 
     string[] ary = [];
@@ -40,18 +62,43 @@ struct Argv {
     return this.args.length;
   }
 
-  @property pure ulong argl() {
+  @property pure ulong argvl() {
     return this.args.length + 1;
   }
 
-  public Flagdex findFlag(string f) {
-    alias PreRet = dtmo.Option!(ulong, dt.Mutability.Mutable);
-    dtmo.Option!(bool)[] checks;
+  //public Flagdex findFlag(string f) {
+  //  alias PreRet = dtmo.Option!(ulong, dt.Mutability.Mutable);
+  //  dtmo.Option!(bool)[] checks;
 
-    foreach (dex, arg; this.args) {
-      if (arg == f) return Flagdex.make(dex);
+  //  foreach (dex, arg; this.args) {
+  //    if (arg == f) return Flagdex.make(dex);
+  //  }
+
+  //  return Flagdex.make();
+  //}
+
+  public FFOut!(M).Out findFlag(FindFlagMode M)(string flag) {
+    alias Ret = typeof(return);
+    static if (M == FFM.Count) {
+      Ret cnt = 0;
+      foreach(arg; this.args) {
+        cnt += arg == flag;
+      }
+      return cnt;
+
     }
+    assert(0);
 
-    return Flagdex.make();
   }
+}
+
+unittest {
+  assert(Argv!(false).make([]).isNone());
+  assert(Argv!(true).make([]).isNone());
+
+  alias AV = Argv!(true);
+  AV count = AV.mock("not an exe", ["-b", "-a", "-a", "-b", "-c", "-b"]);
+  assert(count.findFlag!(FFM.Count)("-a") == 2);
+  assert(count.findFlag!(FFM.Count)("-b") == 3);
+  assert(count.findFlag!(FFM.Count)("-c") == 1);
 }
