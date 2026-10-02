@@ -7,20 +7,12 @@ import dt = dulib.types;
 import dl = dulib.logic;
 import dp = dulib.paths;
 import dtf = dulib.types.filesystem;
+import da = dulib.array;
 
 alias Flagdex = dtmo.Option!(ulong);
 
 enum string[] HELP_FLAGS = ["-h", "--help", "-help", "help"];
 
-enum FindFlagMode {
-  Once, First, Count, Nth
-}
-private alias FFM = FindFlagMode;
-
-private template FFOut(FindFlagMode FF) { // FindFlagOut
-  static if (FF == FFM.Count) alias Out = ulong;
-
-}
 public alias Argv = ArgVec!(false);
 struct ArgVec(bool MOCK = false) {
   alias Self = ArgVec!(MOCK);
@@ -77,18 +69,8 @@ struct ArgVec(bool MOCK = false) {
   //  return Flagdex.make();
   //}
 
-  public FFOut!(M).Out findFlag(FindFlagMode M)(string flag) {
-    alias Ret = typeof(return);
-    static if (M == FFM.Count) {
-      Ret cnt = 0;
-      foreach(arg; this.args) {
-        cnt += arg == flag;
-      }
-      return cnt;
-
-    }
-    assert(0);
-
+  public auto findFlag(da.SearchMode M)(string flag) {
+    return da.searchArray!(string, M, dt.Const)(this.args, flag);
   }
 }
 
@@ -98,7 +80,7 @@ unittest {
 
   alias AV = ArgVec!(true);
   AV count = AV.mock("not an exe", ["-b", "-a", "-a", "-b", "-c", "-b"]);
-  assert(count.findFlag!(FFM.Count)("-a") == 2);
-  assert(count.findFlag!(FFM.Count)("-b") == 3);
-  assert(count.findFlag!(FFM.Count)("-c") == 1);
+  assert(count.findFlag!(da.SearchMode.Count)("-a") == 2);
+  assert(count.findFlag!(da.SearchMode.Count)("-b") == 3);
+  assert(count.findFlag!(da.SearchMode.Count)("-c") == 1);
 }

@@ -17,7 +17,8 @@ private template SearchOut(SearchMode SM) {
   else static if (SM == SMT.All) alias Out = immutable(ulong)[];
 }
 
-SearchOut!(M).Out searchArray(T, SearchMode M = SearchMode.First)(T[] ary, T target, ulong nth = 0) in {
+SearchOut!(M).Out searchArray(T, SearchMode M = SearchMode.First, dt.Mutability I = dt.Mut)
+  (dt.AsMut!(T[], I).Out ary, T target, ulong nth = 0) in {
 
   static if (M != SearchMode.Nth) {
     assert(nth == 0); // Don't need it, don't touch it
@@ -108,10 +109,13 @@ SearchOut!(M).Out searchArray(T, SearchMode M = SearchMode.First)(T[] ary, T tar
     }
     return Ret.make();
 
+  } else {
+    static assert(0);
   }
 }
 
-SearchOut!(M).Out[] multiSearchArray(T, SearchMode M = SearchMode.First)(T[] ary, T[] targets, ulong[] nth = []) in {
+SearchOut!(M).Out[] multiSearchArray(T, SearchMode M = SearchMode.First, dt.Mutability I = dt.Mut)
+  (dt.AsMut!(T[], I).Out ary, T[] targets, ulong[] nth = []) in {
   static if (M == SearchMode.Nth) {
     assert(targets.length == nth.length);
   }
@@ -122,12 +126,13 @@ SearchOut!(M).Out[] multiSearchArray(T, SearchMode M = SearchMode.First)(T[] ary
  } out(r; r.length == targets.length) do {
   alias Ret = typeof(return);
   Ret ret;
+  alias search = searchArray!(T, M, I);
 
   foreach(i, target; targets) {
     static if (M == SearchMode.Nth) {
-      ret ~= searchArray!(T, M)(ary, target, nth[i]);
+      ret ~= search(ary, target, nth[i]);
     } else {
-      ret ~= searchArray!(T, M)(ary, target);
+      ret ~= search(ary, target);
     }
   }
 
