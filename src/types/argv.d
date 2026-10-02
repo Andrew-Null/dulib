@@ -21,9 +21,9 @@ private template FFOut(FindFlagMode FF) { // FindFlagOut
   static if (FF == FFM.Count) alias Out = ulong;
 
 }
-
-struct Argv(bool MOCK = false) {
-  alias Self = Argv!(MOCK);
+public alias Argv = ArgVec!(false);
+struct ArgVec(bool MOCK = false) {
+  alias Self = ArgVec!(MOCK);
   static assert(dl.imply(MOCK, dl.isUnittest));
   static if (dl.isUnittest() && MOCK) {
     alias Exe = dtf.FilePath.Mockable;
@@ -55,7 +55,7 @@ struct Argv(bool MOCK = false) {
     string[] ary = [];
     if (argv.length > 1) ary = argv[1..$];
 
-    return Con.make(Argv(fpo.get, ary));
+    return Con.make(Self(fpo.get, ary));
   }
 
   @property pure ulong argc() {
@@ -93,10 +93,10 @@ struct Argv(bool MOCK = false) {
 }
 
 unittest {
-  assert(Argv!(false).make([]).isNone());
-  assert(Argv!(true).make([]).isNone());
+  assert(Argv.make([]).isNone());
+  assert(ArgVec!(true).make([]).isNone());
 
-  alias AV = Argv!(true);
+  alias AV = ArgVec!(true);
   AV count = AV.mock("not an exe", ["-b", "-a", "-a", "-b", "-c", "-b"]);
   assert(count.findFlag!(FFM.Count)("-a") == 2);
   assert(count.findFlag!(FFM.Count)("-b") == 3);
