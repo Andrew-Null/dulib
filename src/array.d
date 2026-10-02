@@ -92,6 +92,29 @@ SearchOut!(M).Out searchArray(T, SearchMode M = SearchMode.First)(T[] ary, T tar
   }
 }
 
+SearchOut!(M).Out[] multiSearchArray(T, SearchMode M = SearchMode.First)(T[] ary, T[] targets, ulong[] nth = []) in {
+  static if (M == SearchMode.Nth) {
+    assert(targets.length == nth.length);
+  }
+
+  static if (M != SearchMode.Nth) {
+    assert(nth.length == 0);
+  }
+ } out(r; r.length == targets.length) do {
+  alias Ret = typeof(return);
+  Ret ret;
+
+  foreach(i, target; targets) {
+    static if (M == SearchMode.Nth) {
+      ret ~= searchArray!(T, M)(ary, target, nth[i]);
+    } else {
+      ret ~= searchArray!(T, M)(ary, target);
+    }
+  }
+
+  return ret;
+}
+
 unittest {
   ulong[] test = [5, 1, 5, 2, 2, 5, 3, 3, 3, 5, 4, 4, 4, 4, 5];
   alias count = searchArray!(ulong, SearchMode.Count);
@@ -124,4 +147,38 @@ unittest {
     assert(n.get() < np.get());
     assert(((np.get() == (n.get() + 1)) && (cnt != 5)) ^ ((np.get() == n.get() + 2) && (cnt == 5)));
   }
+
+  assert(count(test, 6) == 0);
+  assert(first(test, 6).isNone());
+  assert(once(test, 6).isNone());
+  assert(nth(test, 6, 1).isNone());
+  assert(all(test, 6) == []);
+}
+
+unittest {
+  ulong[] test = [6, 1, 6, 2, 2, 6, 3, 3, 3, 6, 4, 4, 4, 4, 6, 5, 5, 5, 5, 5, 6];
+  ulong[] set = [1, 2, 3, 4, 5, 6];
+
+  alias count = multiSearchArray!(ulong, SearchMode.Count);
+  alias first = multiSearchArray!(ulong, SearchMode.First);
+  alias once = multiSearchArray!(ulong, SearchMode.Once);
+  alias nth = multiSearchArray!(ulong, SearchMode.Nth);
+  alias all = multiSearchArray!(ulong, SearchMode.All);
+
+
+  foreach(cnt; set) {
+    assert(searchArray!(ulong, SearchMode.Count)(test, cnt) == cnt);
+    assert(searchArray!(ulong, SearchMode.All)(test, cnt).length == cnt);
+  }
+
+  auto counted = count(test, set);
+  foreach(num; set) {
+    assert(counted[num-1] == num);
+  }
+
+  /*
+    Could multiSearchArray use more testing? Maybe.
+    But most logic is in searchArray, which is well tested
+    so should be fine
+  */
 }
