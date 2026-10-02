@@ -60,12 +60,31 @@ SearchOut!(M).Out searchArray(T, SearchMode M = SearchMode.First)(T[] ary, T tar
 
   } else static if (M == SearchMode.Once) {
 
-    if (searchArray!(T, SearchMode.Count)(ary, target) > 1) {
-      // avoids throwing, and easier to test
-      return Ret.make();
+    ulong ret = (ary.length + 1);
+
+    foreach(i, elem; ary) {
+
+      if (elem != target) {
+        continue;
+      }
+      assert(elem == target);
+
+      // Toss up which is harder to read these odd almost counter
+      // intuitive guard clauses or the extra nesting to do otherwise
+
+      if (ret < ary.length) {
+        return Ret.make();
+      }
+      assert(ret == (ary.length + 1)); // should look familiar
+
+      ret = i;
     }
 
-    return searchArray!(T, SearchMode.First)(ary, target);
+    if (ret < ary.length) {
+      // assuming by this point this is the hotter path
+      return Ret.make(ret);
+    }
+    return Ret.make();
 
   } else static if (M == SearchMode.All) {
 
