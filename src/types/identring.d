@@ -46,7 +46,7 @@ struct CheckedStr(alias check, bool MOCK = false) {
     return CSR.make(Self(s));
   }
 
-  alias Verdict = dt.Verdict;
+  alias Verdict = dt.Confirmation;
   Verdict setText(string s) {
     if (check(s)) {
       this.txt = s;

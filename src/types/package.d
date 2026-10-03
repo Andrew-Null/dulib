@@ -1,6 +1,6 @@
 module dulib.types;
 
-public enum Verdict : bool {
+public enum Confirmation : bool {
   Success = true,
   Failure = false
 }
