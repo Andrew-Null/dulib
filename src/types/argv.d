@@ -69,8 +69,12 @@ struct ArgVec(bool MOCK = false) {
   //  return Flagdex.make();
   //}
 
-  public auto findFlag(da.SearchMode M)(string flag) {
-    return da.searchArray!(string, M, dt.Const)(this.args, flag);
+  public auto findArg(da.SearchMode M)(string arg, ulong nth = 0) {
+    return da.searchArray!(string, M, dt.Const)(this.args, arg, nth);
+  }
+
+  public auto findArgs(da.SearchMode M)(string[] args, ulong[] nths = []) {
+    return da.multiSearchArray!(string, M, dt.Const)(this.args, args, nths);
   }
 }
 
@@ -80,7 +84,8 @@ unittest {
 
   alias AV = ArgVec!(true);
   AV count = AV.mock("not an exe", ["-b", "-a", "-a", "-b", "-c", "-b"]);
-  assert(count.findFlag!(da.SearchMode.Count)("-a") == 2);
-  assert(count.findFlag!(da.SearchMode.Count)("-b") == 3);
-  assert(count.findFlag!(da.SearchMode.Count)("-c") == 1);
+  assert(count.findArg!(da.SearchMode.Count)("-a") == 2);
+  assert(count.findArg!(da.SearchMode.Count)("-b") == 3);
+  assert(count.findArg!(da.SearchMode.Count)("-c") == 1);
+  assert(count.findArgs!(da.SearchMode.Count)(["-a", "-b", "-c"]) == [2, 3, 1]);
 }
