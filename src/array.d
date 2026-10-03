@@ -4,13 +4,14 @@ import dt = dulib.types;
 import dtmo = dulib.types.monads.option;
 
 enum SearchMode {
-  Once, First, Count, Nth, All
+  Once, First, Count, Nth, All, Contains
 }
 
 private template SearchOut(SearchMode SM) {
   alias OptIndex =  dtmo.Option!(ulong, dt.IMut);
   private alias SMT = SearchMode;
   static if (SM == SMT.Count) alias Out = ulong;
+  static if (SM == SMT.Contains) alias Out = bool;
   else static if
     ((SM == SMT.First) || (SM == SMT.Nth) || (SM == SMT.Once))
     alias Out = OptIndex;
@@ -48,6 +49,7 @@ SearchOut!(M).Out searchArray(T, SearchMode M = SearchMode.First, dt.Mutability 
     foreach(elem; ary) {
       ret += elem == target;
     }
+
     return ret;
 
   } else static if (M == SearchMode.First) {
@@ -109,6 +111,15 @@ SearchOut!(M).Out searchArray(T, SearchMode M = SearchMode.First, dt.Mutability 
     }
     return Ret.make();
 
+  } else static if (M == SearchMode.Contains) {
+
+    foreach (i, elem; ary) {
+      if (elem == target) {
+        return true;
+      }
+    }
+    return false;
+
   } else {
     static assert(0);
   }
@@ -146,11 +157,16 @@ unittest {
   alias once = searchArray!(ulong, SearchMode.Once);
   alias nth = searchArray!(ulong, SearchMode.Nth);
   alias all = searchArray!(ulong, SearchMode.All);
+  alias contains = searchArray!(ulong, SearchMode.Contains);
 
   for (ulong cnt = 1; cnt <= 5; cnt++) {
     assert(count(test, cnt) == cnt);
     assert(all(test, cnt).length == cnt);
 
+  }
+
+  for (ulong val = 0; val < test.length; val++) {
+    assert((count(test, val) > 0) == contains(test, val));
   }
 
   auto o1 = once(test, 1);
