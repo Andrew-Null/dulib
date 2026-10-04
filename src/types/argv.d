@@ -76,6 +76,17 @@ struct ArgVec(bool MOCK = false) {
   public auto findArgs(da.SearchMode M)(string[] args, ulong[] nths = []) {
     return da.multiSearchArray!(string, M, dt.Const)(this.args, args, nths);
   }
+
+  public bool containsAny(string[] targets) {
+    foreach(arg; this.args) {
+      foreach(target; targets) {
+        if (arg == target){
+          return true;
+        }
+      }
+    }
+    return false;
+  }
 }
 
 unittest {
