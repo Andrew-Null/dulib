@@ -77,7 +77,7 @@ struct ArgVec(bool MOCK = false) {
     return da.multiSearchArray!(string, M, dt.Const)(this.args, args, nths);
   }
 
-  public bool containsAny(string[] targets) {
+  public pure bool containsAny(string[] targets) {
     foreach(arg; this.args) {
       foreach(target; targets) {
         if (arg == target){
@@ -99,4 +99,7 @@ unittest {
   assert(count.findArg!(da.SearchMode.Count)("-b") == 3);
   assert(count.findArg!(da.SearchMode.Count)("-c") == 1);
   assert(count.findArgs!(da.SearchMode.Count)(["-a", "-b", "-c"]) == [2, 3, 1]);
+
+  assert(count.containsAny(["-z", "-y", "-x", "-a"]));
+  assert(!count.containsAny(["-z", "-y", "-x"]));
 }
