@@ -40,9 +40,12 @@ struct Tiddress(HasRet RTID = HasRet.make()) {
 
     }
 
-    pure dtmo.Option!(sc.Tid) returnTid() {
+    pure sc.Tid returnTid() {
       //alias Ret = typeof(return);
-      return this.ret();
+      if (this.ret.isSome()) {
+        return this.ret.get();
+      }
+      return this.src;
     }
 
   } else static if (RTID.get()) {
@@ -60,6 +63,10 @@ struct Tiddress(HasRet RTID = HasRet.make()) {
     pure this(sc.Tid s, sc.Tid d) {
       this.src = s;
       this.dst = d;
+    }
+
+    pure sc.Tid returnTid() {
+      return this.src;
     }
   }
 
