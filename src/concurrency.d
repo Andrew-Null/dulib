@@ -38,6 +38,25 @@ struct Tiddress(HasRet RTID = HasRet.make()) {
         return Ret.make(Neo(this.src, this.dst));
       }
 
+
+
+    }
+
+    static Self fromHere(bool R, bool A = false)
+    (sc.Tid dst, sc.Tid ret = sc.thisTid) in {
+      static if (!R) {
+        assert(ret == sc.thisTid);
+      } else {
+        // src is default return, if you going to the trouble of
+        // specifying why would you be specifying the src?
+        // Well can override if need be
+        assert(A || ret != sc.thisTid);
+      }
+    } do {
+      static if (R) {
+        return Self(sc.thisTid, dst, ret);
+      }
+      return Self(sc.thisTid, dst);
     }
 
     pure sc.Tid returnTid() {
@@ -59,6 +78,11 @@ struct Tiddress(HasRet RTID = HasRet.make()) {
     sc.Tid returnTid() {
       return this.ret;
     }
+
+    static Self fromHere(sc.Tid dst, sc.Tid ret) {
+      return Self(sc.thisTid, dst, ret);
+    }
+
   } else {
     pure this(sc.Tid s, sc.Tid d) {
       this.src = s;
@@ -68,15 +92,25 @@ struct Tiddress(HasRet RTID = HasRet.make()) {
     pure sc.Tid returnTid() {
       return this.src;
     }
+
+    static Self fromHere(sc.Tid dst, sc.Tid ret) {
+      return Self(sc.thisTid, dst);
+    }
   }
 
+}
+
+enum Flow {
+  // Some simple commands, based on existing control flow
+  // Maybe they will prove useless and get removed
+  Break, Continue, Exit, Yield, Return
 }
 
 unittest {
   sc.Tid here = sc.thisTid();
   alias None = Tiddress!();
-  None two = None(here, here);
-  None three = None(here, here, here);
+  None two = None.fromHere!(false)(here);
+  None three = None.fromHere!(true, true)(here, here);
 
   alias True = Tiddress!(HasRet.make(true));
   auto tru2 = two.tryHarden!(true)();
