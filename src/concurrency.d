@@ -1,10 +1,31 @@
 import sc = std.concurrency;
 
 import dtmo = dulib.types.monads.option;
+import dt = dulib.types;
 
 private alias HasRet = dtmo.Option!(bool);
+private immutable HasRet DefHR = HasRet.make();
+
+alias recieve(T, HasRet R = DefHR) = sc.recieveOnly!(Message!(T, R));
+
+struct Message(T, HasRet R = DefHR) {
+  alias Self = Message!(T, R);
+  alias Tddr = Tiddress!(R);
+  const Tddr address;
+  const T msg;
+
+  private this(T m, Tddr a) {
+    this.address = a;
+    this.msg = m;
+  }
+
+  public static void send(Tddr a, T msg) {
+    sc.send(a.dst, Self(msg, a));
+  }
+}
+
 struct Tiddress(HasRet RTID = HasRet.make()) {
-  sc.Tid src, dst;
+  const sc.Tid src, dst;
   alias Self = Tiddress!(RTID);
   static if (RTID.isNone()) {
     alias RTid = dtmo.Option!(sc.Tid);
@@ -31,11 +52,11 @@ struct Tiddress(HasRet RTID = HasRet.make()) {
       assert(this.ret.isSome() == B);
       static if (B) {
         assert(ret.isSome());
-        return Ret.make(Neo(this.src, this.dst, this.ret.get()));
+        return Ret.make(Neo(cast(sc.Tid) this.src, cast(sc.Tid) this.dst, cast(sc.Tid) this.ret.get()));
 
       } else {
         assert(ret.isNone());
-        return Ret.make(Neo(this.src, this.dst));
+        return Ret.make(Neo(cast(sc.Tid) this.src, cast(sc.Tid) this.dst));
       }
 
 
@@ -60,11 +81,11 @@ struct Tiddress(HasRet RTID = HasRet.make()) {
     }
 
     pure sc.Tid returnTid() {
-      //alias Ret = typeof(return);
+      alias Ret = typeof(return);
       if (this.ret.isSome()) {
-        return this.ret.get();
+        return cast(Ret) this.ret.get();
       }
-      return this.src;
+      return cast(Ret) this.src;
     }
 
   } else static if (RTID.get()) {
@@ -90,7 +111,7 @@ struct Tiddress(HasRet RTID = HasRet.make()) {
     }
 
     pure sc.Tid returnTid() {
-      return this.src;
+      return cast(sc.Tid) this.src;
     }
 
     static Self fromHere(sc.Tid dst, sc.Tid ret) {
@@ -104,6 +125,18 @@ enum Flow {
   // Some simple commands, based on existing control flow
   // Maybe they will prove useless and get removed
   Break, Continue, Exit, Yield, Return
+}
+
+version(unittest) {
+  void echo(T)(T exit) {
+    while (true) {
+      auto r = recieve!(T);
+      if (r.msg == exit) {
+        return;
+      }
+
+    }
+  }
 }
 
 unittest {
