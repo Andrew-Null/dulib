@@ -11,12 +11,12 @@ alias recieve(T, HasRet R = DefHR) = sc.receiveOnly!(Message!(T, R));
 struct Message(T, HasRet R = DefHR) {
   alias Self = Message!(T, R);
   alias Tddr = Tiddress!(R);
-  immutable Tddr address;
-  immutable T msg;
+  immutable Tddr tids;
+  immutable T message;
 
   private this(T m, Tddr a) {
-    this.address = cast(immutable(Tddr)) a;
-    this.msg = cast(immutable(T)) m;
+    this.tids = cast(immutable(Tddr)) a;
+    this.message = cast(immutable(T)) m;
   }
 
   public static void send(Tddr a, T msg) {
@@ -78,12 +78,12 @@ version(unittest) {
 
     while (true) {
       auto r = recieve!(T, false)();
-      Tddr ret = Tddr.fromHere(r.address.returnTid());
-      if (r.msg == exit) {
-        OutMsg.send(ret, Resp(r.msg, Flow.Exit));
+      Tddr ret = Tddr.fromHere(r.tids.returnTid());
+      if (r.message == exit) {
+        OutMsg.send(ret, Resp(r.message, Flow.Exit));
         return;
       }
-      OutMsg.send(ret, Resp(r.msg, Flow.Continue));
+      OutMsg.send(ret, Resp(r.message, Flow.Continue));
 
     }
   }
@@ -111,13 +111,13 @@ unittest {
   for (ulong msg = 1; msg <= 10; msg++) {
     Msg.send(tddr, msg);
     auto ret = rec();
-    assert(ret.msg.first == msg);
-    assert(ret.msg.second == Flow.Continue);
+    assert(ret.message.first == msg);
+    assert(ret.message.second == Flow.Continue);
 
   }
 
     Msg.send(tddr, 0);
-    assert(rec().msg.second == Flow.Exit);
+    assert(rec().message.second == Flow.Exit);
 
     //sc.join(tddr.dst);
 }
