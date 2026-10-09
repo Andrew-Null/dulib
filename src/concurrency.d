@@ -11,12 +11,12 @@ alias recieve(T, HasRet R = DefHR) = sc.receiveOnly!(Message!(T, R));
 struct Message(T, HasRet R = DefHR) {
   alias Self = Message!(T, R);
   alias Tddr = Tiddress!(R);
-  const Tddr address;
-  const T msg;
+  immutable Tddr address;
+  immutable T msg;
 
   private this(T m, Tddr a) {
-    this.address = a;
-    this.msg = m;
+    this.address = cast(immutable(Tddr)) a;
+    this.msg = cast(immutable(T)) m;
   }
 
   public static void send(Tddr a, T msg) {
@@ -25,21 +25,22 @@ struct Message(T, HasRet R = DefHR) {
 }
 
 struct Tiddress(HasRet RTID = HasRet.make()) {
-  const sc.Tid src, dst;
+  immutable sc.Tid src, dst;
+  alias Cast = immutable(sc.Tid);
   alias Self = Tiddress!(RTID);
   static if (RTID.isNone()) {
     alias RTid = dtmo.Option!(sc.Tid);
     RTid ret;
 
     pure this(sc.Tid s, sc.Tid d, sc.Tid r) {
-      this.src = s;
-      this.dst = d;
+      this.src = cast(Cast) s;
+      this.dst = cast(Cast) d;
       this.ret = RTid.make(r);
     }
 
     pure this(sc.Tid s, sc.Tid d) {
-      this.src = s;
-      this.dst = d;
+      this.src = cast(Cast) s;
+      this.dst = cast(Cast) d;
       this.ret = RTid.make();
     }
 
@@ -89,15 +90,15 @@ struct Tiddress(HasRet RTID = HasRet.make()) {
     }
 
   } else static if (RTID.get()) {
-    sc.Tid ret;
+    immutable(sc.Tid) ret;
     pure this(sc.Tid s, sc.Tid d, sc.Tid r) {
-      this.src = s;
-      this.dst = d;
-      this.ret = r;
+      this.src = cast(Cast) s;
+      this.dst = cast(Cast) d;
+      this.ret = cast(Cast) r;
     }
 
     pure sc.Tid returnTid() {
-      return this.ret;
+      return cast(sc.Tid) this.ret;
     }
 
     static Self fromHere(sc.Tid dst, sc.Tid ret) {
@@ -105,16 +106,16 @@ struct Tiddress(HasRet RTID = HasRet.make()) {
     }
 
   } else {
-    pure this(sc.Tid s, sc.Tid d) {
-      this.src = s;
-      this.dst = d;
+    pure this( sc.Tid s, sc.Tid d) {
+      this.src = cast(immutable(sc.Tid)) s;
+      this.dst = cast(immutable(sc.Tid)) d;
     }
 
     const sc.Tid returnTid() {
       return cast(sc.Tid) this.src;
     }
 
-    static Self fromHere(sc.Tid dst, sc.Tid ret) {
+    static Self fromHere(sc.Tid dst) {
       return Self(sc.thisTid, dst);
     }
   }
@@ -132,7 +133,7 @@ version(unittest) {
   void echo(T)(T exit) {
     alias Resp = dtp.Pair!(T, Flow);
     alias InMsg = Message!(T);
-    alias OutMsg = Message!(Resp);
+    alias OutMsg = Message!(Resp, HasRet.make(false));
     alias Tddr = Tiddress!(HasRet.make(false));
 
     while (true) {
@@ -181,17 +182,19 @@ unittest {
   Tddr tddr = Tddr.fromHere(sc.spawn(&echo!(ulong), 0));
 
   alias Msg = Message!(ulong, UTHR);
-  alias RMsg = Message!(dtp.Pair!(ulong, Flow));
+  alias RMsg = Message!(dtp.Pair!(ulong, Flow), UTHR);
+  alias rec = recieve!(dtp.Pair!(ulong, Flow), UTHR);
 
   for (ulong msg = 1; msg <= 10; msg++) {
-    Message!(ulong).send(tddr, msg);
-    RMsg ret = recieve!(RMsg)();
-    assert(ret.first == msg);
-    assert(ret.second == Flow.Continue);
+    Msg.send(tddr, msg);
+    auto ret = rec();
+    assert(ret.msg.first == msg);
+    assert(ret.msg.second == Flow.Continue);
 
   }
 
-    Message!(ulong).send(tddr, 0);
-    assert(recieve!(RMsg)().second == Flow.Exit);
+    Msg.send(tddr, 0);
+    assert(rec().msg.second == Flow.Exit);
 
+    //sc.join(tddr.dst);
 }
