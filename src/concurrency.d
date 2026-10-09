@@ -6,7 +6,7 @@ import dt = dulib.types;
 private alias HasRet = dtmo.Option!(bool);
 private immutable HasRet DefHR = HasRet.make();
 
-alias recieve(T, HasRet R = DefHR) = sc.recieveOnly!(Message!(T, R));
+alias recieve(T, HasRet R = DefHR) = sc.receiveOnly!(Message!(T, R));
 
 struct Message(T, HasRet R = DefHR) {
   alias Self = Message!(T, R);
@@ -20,7 +20,7 @@ struct Message(T, HasRet R = DefHR) {
   }
 
   public static void send(Tddr a, T msg) {
-    sc.send(a.dst, Self(msg, a));
+    sc.send(cast(sc.Tid) a.dst, Self(msg, a));
   }
 }
 
@@ -96,7 +96,7 @@ struct Tiddress(HasRet RTID = HasRet.make()) {
       this.ret = r;
     }
 
-    sc.Tid returnTid() {
+    pure sc.Tid returnTid() {
       return this.ret;
     }
 
@@ -110,7 +110,7 @@ struct Tiddress(HasRet RTID = HasRet.make()) {
       this.dst = d;
     }
 
-    pure sc.Tid returnTid() {
+    const sc.Tid returnTid() {
       return cast(sc.Tid) this.src;
     }
 
@@ -128,12 +128,21 @@ enum Flow {
 }
 
 version(unittest) {
+  import dtp = dulib.types.pair;
   void echo(T)(T exit) {
+    alias Resp = dtp.Pair!(T, Flow);
+    alias InMsg = Message!(T);
+    alias OutMsg = Message!(Resp);
+    alias Tddr = Tiddress!(HasRet.make(false));
+
     while (true) {
-      auto r = recieve!(T);
+      auto r = recieve!(T, dtmo.Option!(bool).make(false))();
+      Tddr ret = Tddr.fromHere(r.address.returnTid());
       if (r.msg == exit) {
+        OutMsg.send(ret, Resp(r.msg, Flow.Exit));
         return;
       }
+      OutMsg.send(ret, Resp(r.msg, Flow.Continue));
 
     }
   }
@@ -164,4 +173,25 @@ unittest {
 
   True tru = tru3.get();
   False fls = fls2.get();
+}
+
+unittest {
+  enum HasRet UTHR = HasRet.make(false);
+  alias Tddr = Tiddress!(UTHR);
+  Tddr tddr = Tddr.fromHere(sc.spawn(&echo!(ulong), 0));
+
+  alias Msg = Message!(ulong, UTHR);
+  alias RMsg = Message!(dtp.Pair!(ulong, Flow));
+
+  for (ulong msg = 1; msg <= 10; msg++) {
+    Message!(ulong).send(tddr, msg);
+    RMsg ret = recieve!(RMsg)();
+    assert(ret.first == msg);
+    assert(ret.second == Flow.Continue);
+
+  }
+
+    Message!(ulong).send(tddr, 0);
+    assert(recieve!(RMsg)().second == Flow.Exit);
+
 }
