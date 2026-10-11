@@ -46,6 +46,11 @@ struct ArgVec(bool MOCK = false) {
 
     string[] ary = [];
     if (argv.length > 1) ary = argv[1..$];
+    foreach(arg; ary) {
+      assert(arg.length > 0);
+      //I think this is true, but, better to state this explicitly
+      //and have it caught if I am wrong
+    }
 
     return Con.make(Self(fpo.get, ary));
   }
