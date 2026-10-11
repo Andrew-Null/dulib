@@ -119,5 +119,5 @@ unittest {
     Msg.send(tddr, 0);
     assert(rec().message.second == Flow.Exit);
 
-    //sc.join(tddr.dst);
+    //sc.join(tddr.dst); // not in dmd/phobos 2.110
 }
