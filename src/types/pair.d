@@ -11,52 +11,18 @@ public enum Naming {
   // cost to having them
 }
 
-struct Duo(F, S, dt.Mutability M = dt.Mutability.Immutable, Naming N = Order){
-  static if (N == Naming.Order) {
-    public dt.AsMut!(F, M).Out first;
-    public dt.AsMut!(S, M).Out second;
+struct Duo(F, S, string FNAME, string LNAME, dt.Mutability M = dt.Mutability.Immutable){
+  mixin("public dt.AsMut!(F, M).Out " ~ FNAME ~ ";");
+  mixin("public dt.AsMut!(S, M).Out " ~ LNAME ~ ";");
 
-    this(F f, S s) {
-      this.first = f;
-      this.second = s;
-    }
-  } else static if (N == Naming.KV) {
-    public dt.AsMut!(F, M).Out key;
-    public dt.AsMut!(S, M).Out value;
-
-    this(F k, S v) {
-      this.key = k;
-      this.value = v;
-    }
-  } else static if (N == Naming.Either) {
-    public dt.AsMut!(F, M).Out left;
-    public dt.AsMut!(S, M).Out right;
-
-    this(F l, S r) {
-      this.left = l;
-      this.right = r;
-    }
-  } else static if (N == Naming.List) {
-    public dt.AsMut!(F, M).Out head;
-    public dt.AsMut!(S, M).Out tail;
-
-    this(F h, S t) {
-      this.head = o;
-      this.tail = t;
-    }
-  } else static if (N == Naming.Lisp) {
-    public dt.AsMut!(F, M).Out car;
-    public dt.AsMut!(S, M).Out cdr;
-
-    this(F a, S d) {
-      this.car = a;
-      this.cdr = d;
-    }
-  }
+  mixin("pure this(F f, S s) {
+     this." ~ FNAME ~ " = f;
+     this." ~ LNAME ~" = s;
+   }");
 }
 
-alias Pair(F, S, dt.Mutability M = dt.IMut) = Duo!(F, S, M, Naming.Order);
-alias KeyValue(F, S, dt.Mutability M = dt.IMut) = Duo!(F, S, M, Naming.KV);
+alias Pair(F, S, dt.Mutability M = dt.IMut) = Duo!(F, S, "first", "second", M);
+//alias KeyValue(F, S, dt.Mutability M = dt.IMut) = Duo!(F, S, M, Naming.KV);
 
 unittest {
   alias P = Pair!(ulong, float);
@@ -67,13 +33,13 @@ unittest {
   assert(pair.second == s);
 }
 
-unittest {
-  alias P = KeyValue!(ulong, float);
-  ulong f = 4;
-  float s = -2.5;
-  P pair = P(f, s);
-  assert(pair.key == f);
-  assert(pair.value == s);
-}
+//unittest {
+//  alias P = KeyValue!(ulong, float);
+//  ulong f = 4;
+//  float s = -2.5;
+//  P pair = P(f, s);
+//  assert(pair.key == f);
+//  assert(pair.value == s);
+//}
 
 // should probably test the others
