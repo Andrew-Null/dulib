@@ -2,15 +2,6 @@ module dulib.types.pair;
 
 import dt = dulib.types;
 
-public enum Naming {
-  // Why? Because names mean something
-  // And because I can
-  KV, Order, Either, List, Lisp
-  // Either, List, and Lisp are probably unnecessary
-  // But at least for the moment, there isn't much of a
-  // cost to having them
-}
-
 struct Duo(F, S, string FNAME, string LNAME, dt.Mutability M = dt.Mutability.Immutable){
   mixin("public dt.AsMut!(F, M).Out " ~ FNAME ~ ";");
   mixin("public dt.AsMut!(S, M).Out " ~ LNAME ~ ";");
