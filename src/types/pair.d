@@ -22,7 +22,7 @@ struct Duo(F, S, string FNAME, string LNAME, dt.Mutability M = dt.Mutability.Imm
 }
 
 alias Pair(F, S, dt.Mutability M = dt.IMut) = Duo!(F, S, "first", "second", M);
-//alias KeyValue(F, S, dt.Mutability M = dt.IMut) = Duo!(F, S, M, Naming.KV);
+alias KeyValue(F, S, dt.Mutability M = dt.IMut) = Duo!(F, S,"key", "value", M);
 
 unittest {
   alias P = Pair!(ulong, float);
@@ -33,13 +33,13 @@ unittest {
   assert(pair.second == s);
 }
 
-//unittest {
-//  alias P = KeyValue!(ulong, float);
-//  ulong f = 4;
-//  float s = -2.5;
-//  P pair = P(f, s);
-//  assert(pair.key == f);
-//  assert(pair.value == s);
-//}
+unittest {
+  alias P = KeyValue!(ulong, float);
+  ulong f = 4;
+  float s = -2.5;
+  P pair = P(f, s);
+  assert(pair.key == f);
+  assert(pair.value == s);
+}
 
 // should probably test the others
