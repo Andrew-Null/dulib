@@ -4,7 +4,7 @@ import dt = dulib.types;
 import dtme = dulib.types.monads.either;
 alias Eith = dtme.Either;
 
-struct Result(O, E, dt.Mutability M) {
+struct Result(O, E, dt.Mutability M = dt.IMut) {
   private alias Data = Eith!(O, E, M);
   private alias Self = Result!(O, E, M);
   Data data;
