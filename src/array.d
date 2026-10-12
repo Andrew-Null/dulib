@@ -18,6 +18,20 @@ private template SearchOut(SearchMode SM) {
   else static if (SM == SMT.All) alias Out = immutable(ulong)[];
 }
 
+pure T[] flatten(T)(T[][] unflat) {
+  if (unflat.length == 0) {
+    return [];
+  } else if (unflat.length == 1) {
+    return unflat[0];
+  }
+
+  T[] ret = unflat[0];
+  for (ulong dex = 1; dex < unflat.length; dex++) {
+    ret ~= unflat[dex];
+  }
+  return ret;
+}
+
 SearchOut!(M).Out searchArray(T, SearchMode M = SearchMode.First, dt.Mutability I = dt.Mut)
   (dt.AsMut!(T[], I).Out ary, T target, ulong nth = 0) in {
 
