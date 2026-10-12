@@ -32,6 +32,15 @@ pure T[] flatten(T)(T[][] unflat) {
   return ret;
 }
 
+unittest {
+  ulong[][] unflat = [[0,1,2],[3],[4,5],[6,7,8,9],[],[10]];
+  ulong[] flat = flatten(unflat);
+
+  foreach(i,n;flat) {
+    assert(i == n);
+  }
+}
+
 SearchOut!(M).Out searchArray(T, SearchMode M = SearchMode.First, dt.Mutability I = dt.Mut)
   (dt.AsMut!(T[], I).Out ary, T target, ulong nth = 0) in {
 
