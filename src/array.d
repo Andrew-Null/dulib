@@ -7,15 +7,15 @@ enum SearchMode {
   Once, First, Count, Nth, All, Contains
 }
 
-private template SearchOut(SearchMode SM) {
-  alias OptIndex =  dtmo.Option!(ulong, dt.IMut);
+private template SearchOut(SearchMode SM, T = ulong) {
+  alias OptIndex =  dtmo.Option!(T, dt.IMut);
   private alias SMT = SearchMode;
-  static if (SM == SMT.Count) alias Out = ulong;
+  static if (SM == SMT.Count) alias Out = T;
   static if (SM == SMT.Contains) alias Out = bool;
   else static if
     ((SM == SMT.First) || (SM == SMT.Nth) || (SM == SMT.Once))
     alias Out = OptIndex;
-  else static if (SM == SMT.All) alias Out = immutable(ulong)[];
+  else static if (SM == SMT.All) alias Out = immutable(T)[];
 }
 
 pure T[] flatten(T)(T[][] unflat) {
@@ -245,3 +245,21 @@ unittest {
     so should be fine
   */
 }
+
+/*SearchOut!(M, O).Out searchArray(T, SearchMode M = SearchMode.First, dt.Mutability I = dt.Mut, O = ulong)
+  (dt.AsMut!(T[], I).Out ary, bool function(T) targeting, ulong nth = 0) in {
+  static assert((O.stringof == ulong.stringof) || (O.stringof == T.stringof));
+
+  static if (M != SearchMode.Nth) {
+    assert(nth == 0); // Don't need it, don't touch it
+  }
+
+  // Could of done else opted to do separate if for explicitness/clarity
+  static if (M == SearchMode.Nth) {
+    assert(nth > 0);
+  }
+
+ } do {
+  alias Ret = typeof(return);
+  return Ret.init;
+ }*/
