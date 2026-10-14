@@ -11,10 +11,23 @@ enum SearchTargeting {
   Single, Multi, Function, Delegate
 }
 
-private template SearchOut(SearchMode SM, T = ulong) {
+enum SearchOutput {
+  Index, Value
+}
+
+private template SOT(T, SearchOutput SO = SearchOutput.Index) {
+  static if (SO == SearchOutput.Index) {
+    alias Out = ulong;
+  } else {
+    alias Out = T;
+  }
+}
+
+private template SearchOut(SearchMode SM, T, SearchOutput SO = SearchOutput.Index) {
+  alias Output = SOT!(T, SO);
   alias OptIndex =  dtmo.Option!(T, dt.IMut);
   private alias SMT = SearchMode;
-  static if (SM == SMT.Count) alias Out = T;
+  static if (SM == SMT.Count) alias Out = ulong;
   static if (SM == SMT.Contains) alias Out = bool;
   else static if
     ((SM == SMT.First) || (SM == SMT.Nth) || (SM == SMT.Once))
@@ -61,21 +74,21 @@ unittest {
   }
 }
 
-struct SearchConfig(T,O = ulong, SearchMode M = SearchMode.First,
+struct SearchConfig(T, SearchOutput SO = SearchOutput.Index, SearchMode M = SearchMode.First,
                     SearchTargeting ST = SearchTargeting.Single,
                     dt.Mutability AM = dt.Mutable) {
   alias Input = T;
-  alias Output = O;
-  static assert((O.stringof == T.stringof) || (O.stringof == ulong.stringof));
+  alias Output = SOT!(T, SO);
 
   enum SearchMode MODE = M;
 
-  alias Return = SearchMode;
+  static assert(dl.imply(SO != SearchOutput.Index, M != SearchMode.Single));
+  alias Return = SearchOut!(M, T, SO);
 
   static assert(dl.imply(AM != dt.Mutable, ST == SearchTargeting.Multi));
 }
 
-SearchOut!(M).Out searchArray(T, SearchMode M = SearchMode.First, dt.Mutability I = dt.Mut)
+SearchOut!(M, T).Out searchArray(T, SearchMode M = SearchMode.First, dt.Mutability I = dt.Mut)
   (dt.AsMut!(T[], I).Out ary, T target, ulong nth = 0) in {
 
   static if (M != SearchMode.Nth) {
@@ -182,7 +195,7 @@ SearchOut!(M).Out searchArray(T, SearchMode M = SearchMode.First, dt.Mutability 
   }
 }
 
-SearchOut!(M).Out[] multiSearchArray(T, SearchMode M = SearchMode.First, dt.Mutability I = dt.Mut)
+SearchOut!(M, T).Out[] multiSearchArray(T, SearchMode M = SearchMode.First, dt.Mutability I = dt.Mut)
   (dt.AsMut!(T[], I).Out ary, T[] targets, ulong[] nth = []) in {
   static if (M == SearchMode.Nth) {
     assert(targets.length == nth.length);
