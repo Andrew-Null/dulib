@@ -7,6 +7,10 @@ enum SearchMode {
   Once, First, Count, Nth, All, Contains
 }
 
+enum SearchTargeting {
+  Single, Multi, Function, Delegate
+}
+
 private template SearchOut(SearchMode SM, T = ulong) {
   alias OptIndex =  dtmo.Option!(T, dt.IMut);
   private alias SMT = SearchMode;
@@ -16,6 +20,22 @@ private template SearchOut(SearchMode SM, T = ulong) {
     ((SM == SMT.First) || (SM == SMT.Nth) || (SM == SMT.Once))
     alias Out = OptIndex;
   else static if (SM == SMT.All) alias Out = immutable(T)[];
+}
+
+private template SearchTarget(T, SearchTargeting ST = SearchTargeting.Single, dt.Mutability AM = dt.Mut) {
+  static assert(dl.imply(AM != dt.Mutable, ST == SearchTargeting.Multi));
+  alias Trgt = SearchTarget;
+  static if (ST == Trgt.Single) {
+    alias Out = T;
+  } else static if (ST == Trgt.Multi) {
+    alias Out = dt.AsMut(T[], AM);
+  } else static if (ST == Trgt.Function) {
+    alias Out = bool function(T);
+  } else {
+    static assert(ST == Trgt.Delegate);
+    alias Out = bool delegate(T);
+  }
+
 }
 
 pure T[] flatten(T)(T[][] unflat) {
@@ -39,6 +59,20 @@ unittest {
   foreach(i,n;flat) {
     assert(i == n);
   }
+}
+
+struct SearchConfig(T,O = ulong, SearchMode M = SearchMode.First,
+                    SearchTargeting ST = SearchTargeting.Single,
+                    dt.Mutability AM = dt.Mutable) {
+  alias Input = T;
+  alias Output = O;
+  static assert((O.stringof == T.stringof) || (O.stringof == ulong.stringof));
+
+  enum SearchMode MODE = M;
+
+  alias Return = SearchMode;
+
+  static assert(dl.imply(AM != dt.Mutable, ST == SearchTargeting.Multi));
 }
 
 SearchOut!(M).Out searchArray(T, SearchMode M = SearchMode.First, dt.Mutability I = dt.Mut)
