@@ -24,15 +24,15 @@ private template SOT(T, SearchOutput SO = SearchOutput.Index) {
 }
 
 private template SearchOut(SearchMode SM, T, SearchOutput SO = SearchOutput.Index) {
-  alias Output = SOT!(T, SO);
-  alias OptIndex =  dtmo.Option!(T, dt.IMut);
+  alias Output = SOT!(T, SO).Out;
+  alias OptIndex =  dtmo.Option!(Output, dt.IMut);
   private alias SMT = SearchMode;
-  static if (SM == SMT.Count) alias Out = ulong;
+  static if (SM == SMT.Count) alias Out = Output;
   static if (SM == SMT.Contains) alias Out = bool;
   else static if
     ((SM == SMT.First) || (SM == SMT.Nth) || (SM == SMT.Once))
     alias Out = OptIndex;
-  else static if (SM == SMT.All) alias Out = immutable(T)[];
+  else static if (SM == SMT.All) alias Out = immutable(Output)[];
 }
 
 private template SearchTarget(T, SearchTargeting ST = SearchTargeting.Single, dt.Mutability AM = dt.Mut) {
