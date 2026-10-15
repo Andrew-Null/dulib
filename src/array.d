@@ -1,6 +1,7 @@
 module dulib.array;
 
 import dt = dulib.types;
+import dl = dulib.logic;
 import dtmo = dulib.types.monads.option;
 
 enum SearchMode {
@@ -76,17 +77,27 @@ unittest {
 
 struct SearchConfig(T, SearchOutput SO = SearchOutput.Index, SearchMode M = SearchMode.First,
                     SearchTargeting ST = SearchTargeting.Single,
-                    dt.Mutability AM = dt.Mutable) {
-  alias Input = T;
-  alias Output = SOT!(T, SO);
+                    dt.Mutability AM = dt.Mut) {
+  private static alias Remake(t = T, SearchOutput so = SO, SearchMode m = M, SearchTargeting st = ST, dt.Mutability am = M) = SearchConfig!(T, so, m, st, am);
 
-  enum SearchMode MODE = M;
+  static alias Output = SOT!(T, SO);
 
-  static assert(dl.imply(SO != SearchOutput.Index, M != SearchMode.Single));
+  static enum SearchOutput OUTPUT = SO;
+  static enum SearchMode MODE = M;
+  static enum SearchTargeting TARGETING = ST;
+  static enum dt.Mutability MUTABILITY = AM;
+
+  static assert(dl.imply(SO != SearchOutput.Index, ST != SearchTargeting.Single));
   alias Return = SearchOut!(M, T, SO);
 
-  static assert(dl.imply(AM != dt.Mutable, ST == SearchTargeting.Multi));
+  static assert(dl.imply(AM != dt.Mut, ST == SearchTargeting.Multi));
+  alias Input = dt.AsMut!(T, AM);
 }
+
+unittest {
+  SearchConfig!(string) sc = SearchConfig!(string).init;
+}
+
 
 SearchOut!(M, T).Out searchArray(T, SearchMode M = SearchMode.First, dt.Mutability I = dt.Mut)
   (dt.AsMut!(T[], I).Out ary, T target, ulong nth = 0) in {
