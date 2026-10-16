@@ -24,6 +24,7 @@ private template SOT(T, SearchOutput SO = SearchOutput.Index) {
   }
 }
 
+
 private template SearchOut(SearchMode SM, T, SearchOutput SO = SearchOutput.Index) {
   alias Output = SOT!(T, SO).Out;
   alias OptIndex =  dtmo.Option!(Output, dt.IMut);
@@ -37,8 +38,8 @@ private template SearchOut(SearchMode SM, T, SearchOutput SO = SearchOutput.Inde
 }
 
 private template SearchTarget(T, SearchTargeting ST = SearchTargeting.Single, dt.Mutability AM = dt.Mut) {
-  static assert(dl.imply(AM != dt.Mutable, ST == SearchTargeting.Multi));
-  alias Trgt = SearchTarget;
+  static assert(dl.imply(AM != dt.Mut, ST == SearchTargeting.Multi));
+  alias Trgt = SearchTargeting;
   static if (ST == Trgt.Single) {
     alias Out = T;
   } else static if (ST == Trgt.Multi) {
@@ -92,7 +93,16 @@ struct SearchConfig(T, SearchMode M = SearchMode.First, SearchOutput SO = Search
   alias Return = SearchOut!(M, T, SO);
 
   static assert(dl.imply(AM != dt.Mut, ST == SearchTargeting.Multi));
-  alias Input = dt.AsMut!(T, AM);
+  alias InputArray = dt.AsMut!(T, AM).Out[];
+  static if (ST == SearchTargeting.Multi) {
+    alias INth = ulong[];
+    enum INth DefaultNth = [];
+  } else {
+    alias INth = ulong;
+    enum INth DefaultNth = 0;
+  }
+
+  alias InputTarget = SearchTarget!(T, ST, AM).Out;
 
   static alias ChangeMode(SearchMode sm) = Remake!(sm, SO, ST, AM);
   static alias ChangeOutput(SearchOutput so) = Remake!(M, so, ST, AM);
@@ -100,7 +110,7 @@ struct SearchConfig(T, SearchMode M = SearchMode.First, SearchOutput SO = Search
   static alias ChangeArrayMutability(dt.Mutability am) = Remake!(M, SO, ST, am);
 
   static if (M != SearchMode.First) {
-    alias FindFirst = Self.ChangeMode(SearchMode.First);
+    alias FindFirst = Self.ChangeMode!(SearchMode.First);
   }
 }
 
@@ -114,6 +124,9 @@ unittest {
   //pragma(msg, typeof(sc2).mangleof);
 }
 
+CFG.Output newSearch(CFG)(CFG.InputArray ary, CFG.InputTarget target, CFG.INth nth = CFG.DefaultNth) {
+
+}
 
 SearchOut!(M, T).Out searchArray(T, SearchMode M = SearchMode.First, dt.Mutability I = dt.Mut)
   (dt.AsMut!(T[], I).Out ary, T target, ulong nth = 0) in {
