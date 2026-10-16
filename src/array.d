@@ -75,10 +75,10 @@ unittest {
   }
 }
 
-struct SearchConfig(T, SearchOutput SO = SearchOutput.Index, SearchMode M = SearchMode.First,
+struct SearchConfig(T, SearchMode M = SearchMode.First, SearchOutput SO = SearchOutput.Index,
                     SearchTargeting ST = SearchTargeting.Single,
                     dt.Mutability AM = dt.Mut) {
-  private static alias Remake(t = T, SearchOutput so = SO, SearchMode m = M, SearchTargeting st = ST, dt.Mutability am = M) = SearchConfig!(T, so, m, st, am);
+  private static alias Remake(SearchMode m = M, SearchOutput so = SO, SearchTargeting st = ST, dt.Mutability am = M) = SearchConfig!(T, m, so, st, am);
 
   static alias Output = SOT!(T, SO);
 
@@ -92,10 +92,21 @@ struct SearchConfig(T, SearchOutput SO = SearchOutput.Index, SearchMode M = Sear
 
   static assert(dl.imply(AM != dt.Mut, ST == SearchTargeting.Multi));
   alias Input = dt.AsMut!(T, AM);
+
+  static alias ChangeMode(SearchMode sm) = Remake!(sm, SO, ST, AM);
+  static alias ChangeOutput(SearchOutput so) = Remake!(M, so, ST, AM);
+  static alias ChangeTargeting(SearchTargeting st) = Remake!(M, SO, st, AM);
+  static alias ChangeArrayMutability(dt.Mutability am) = Remake!(M, SO, ST, am);
 }
 
 unittest {
   SearchConfig!(string) sc = SearchConfig!(string).init;
+  SearchConfig!(ulong) sc2 = SearchConfig!(ulong).init;
+  typeof(sc).ChangeMode!(SearchMode.All) sc3;
+  //pragma(msg, SearchConfig.stringof);
+  //pragma(msg, SearchConfig.mangleof);
+  //pragma(msg, typeof(sc).mangleof);
+  //pragma(msg, typeof(sc2).mangleof);
 }
 
 
