@@ -78,6 +78,7 @@ unittest {
 struct SearchConfig(T, SearchMode M = SearchMode.First, SearchOutput SO = SearchOutput.Index,
                     SearchTargeting ST = SearchTargeting.Single,
                     dt.Mutability AM = dt.Mut) {
+  alias Self = SearchConfig!(T, M, SO, ST, AM);
   private static alias Remake(SearchMode m = M, SearchOutput so = SO, SearchTargeting st = ST, dt.Mutability am = M) = SearchConfig!(T, m, so, st, am);
 
   static alias Output = SOT!(T, SO);
@@ -97,6 +98,10 @@ struct SearchConfig(T, SearchMode M = SearchMode.First, SearchOutput SO = Search
   static alias ChangeOutput(SearchOutput so) = Remake!(M, so, ST, AM);
   static alias ChangeTargeting(SearchTargeting st) = Remake!(M, SO, st, AM);
   static alias ChangeArrayMutability(dt.Mutability am) = Remake!(M, SO, ST, am);
+
+  static if (M != SearchMode.First) {
+    alias FindFirst = Self.ChangeMode(SearchMode.First);
+  }
 }
 
 unittest {
