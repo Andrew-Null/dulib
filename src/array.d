@@ -80,6 +80,7 @@ struct SearchConfig(T, SearchMode M = SearchMode.First, SearchOutput SO = Search
                     SearchTargeting ST = SearchTargeting.Single,
                     dt.Mutability AM = dt.Mut) {
   alias Self = SearchConfig!(T, M, SO, ST, AM);
+  alias BaseType = T;
   private static alias Remake(SearchMode m = M, SearchOutput so = SO, SearchTargeting st = ST, dt.Mutability am = M) = SearchConfig!(T, m, so, st, am);
 
   static alias Output = SOT!(T, SO);
@@ -124,8 +125,18 @@ unittest {
   //pragma(msg, typeof(sc2).mangleof);
 }
 
-CFG.Output newSearch(CFG)(CFG.InputArray ary, CFG.InputTarget target, CFG.INth nth = CFG.DefaultNth) {
+private SOT!(T, SO).Out getOutput(T, SearchOutput SO, dt.Mutability M)(dt.AsMut!(T, M)[]* ary, ulong index) {
+  static if (SO == SearchOut.Index) {
+    return index;
+  } else {
+    static assert(SO == SeachOutput.Value);
+    return ary*[index];
+  }
+}
 
+CFG.Output newSearch(CFG)(CFG.InputArray ary, CFG.InputTarget target, CFG.INth nth = CFG.DefaultNth) {
+  alias Ret = typeof(return);
+  alias getOut = getOutput!(CFG.BaseType, CFG.OUTPUT, CFG.MUTABILITY);
 }
 
 SearchOut!(M, T).Out searchArray(T, SearchMode M = SearchMode.First, dt.Mutability I = dt.Mut)
