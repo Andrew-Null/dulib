@@ -134,7 +134,7 @@ private SOT!(T, SO).Out getOutput(T, SearchOutput SO, dt.Mutability M)(dt.AsMut!
   }
 }
 
-CFG.Output newSearch(CFG)(CFG.InputArray ary, CFG.InputTarget target, CFG.INth nth = CFG.DefaultNth) {
+private CFG.Output newSearch(CFG)(CFG.InputArray ary, CFG.InputTarget target, CFG.INth nth = CFG.DefaultNth) {
   alias Ret = typeof(return);
   alias getOut = getOutput!(CFG.BaseType, CFG.OUTPUT, CFG.MUTABILITY);
 }
