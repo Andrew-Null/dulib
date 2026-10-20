@@ -113,6 +113,10 @@ struct SearchConfig(T, SearchMode M = SearchMode.First, SearchOutput SO = Search
   static if (M != SearchMode.First) {
     alias FindFirst = Self.ChangeMode!(SearchMode.First);
   }
+
+  static if (ST != SearchTargeting.Single) {
+    alias SingleSearch = Self.ChangeTargeting(SearchTargeting.Single);
+  }
 }
 
 unittest {
@@ -135,8 +139,23 @@ private SOT!(T, SO).Out getOutput(T, SearchOutput SO, dt.Mutability M)(dt.AsMut!
 }
 
 private CFG.Output newSearch(CFG)(CFG.InputArray ary, CFG.InputTarget target, CFG.INth nth = CFG.DefaultNth) {
+  static assert(CFG.mangleof == SearchConfig!(CFG.BaseType, CFG.MODE, CFG.OUTPUT, CFG.TARGETING, CFG.MUTABILITY));
   alias Ret = typeof(return);
   alias getOut = getOutput!(CFG.BaseType, CFG.OUTPUT, CFG.MUTABILITY);
+
+  static if (CFG.TARGETING == SearchTargeting.Multi && CFG.MODE != SearchMode.Nth) {
+    Ret ret = [];
+    foreach (trgt; target) {
+      ret ~= newSearch!(CFG.SingleSearch)(ary, trgt);
+    }
+    return ret;
+  } else static if (CFG.TARGETING == SearchTargeting.Multi && CFG.MODE == SearchMode.Nth) {
+    Ret ret = [];
+    foreach (i, trgt; target) {
+      ret ~= newSearch!(CFG.SingleSearch)(ary, trgt, nth[i]);
+    }
+    return ret;
+  }
 }
 
 SearchOut!(M, T).Out searchArray(T, SearchMode M = SearchMode.First, dt.Mutability I = dt.Mut)
