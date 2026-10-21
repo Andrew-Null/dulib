@@ -155,6 +155,16 @@ private CFG.Output newSearch(CFG)(CFG.InputArray ary, CFG.InputTarget target, CF
       ret ~= newSearch!(CFG.SingleSearch)(ary, trgt, nth[i]);
     }
     return ret;
+  } else {
+    static assert(CFG.TARGETING == SearchTargeting.Delegate || CFG.TARGETING == SearchTargeting.Function);
+    static if (CFG.MODE == SearchMode.First) {
+      foreach(i, elem; ary) {
+        if (target(elem)) {
+          return Ret.make(getOut(&ary, i));
+        }
+      }
+      return Ret.make();
+    }
   }
 }
 
