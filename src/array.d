@@ -180,6 +180,12 @@ private CFG.Output newSearch(CFG)(CFG.InputArray ary, CFG.InputTarget target, CF
         return Ret.make(getOut(&ary, i));
       }
       return Ret.make();
+    } else static if (CFG.MODE == SearchMode.Count) {
+      ulong ret = 0;
+      foreach(elem; ary) {
+        ret += target(elem);
+      }
+      return ret;
     }
 
   }
