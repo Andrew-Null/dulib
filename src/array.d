@@ -187,6 +187,13 @@ private CFG.Output newSearch(CFG)(CFG.InputArray ary, CFG.InputTarget target, CF
       }
       return ret;
     } else static if (CFG.MODE == SearchMode.Nth) {
+      foreach (i, elem; ary) {
+        nth -= target(elem);
+        if (nth == 0) {
+          return Ret.make(getOut(&ary, i));
+        }
+      }
+      return Ret.make();
     } else static if (CFG.MODE == SearchMode.All) {
       Ret ret = [];
       foreach (i, elem; ary) {
