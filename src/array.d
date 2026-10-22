@@ -145,6 +145,7 @@ private CFG.Output newSearch(CFG)(CFG.InputArray ary, CFG.InputTarget target, CF
 
   static if (CFG.TARGETING == SearchTargeting.Multi && CFG.MODE != SearchMode.Nth) {
     Ret ret = [];
+
     foreach (trgt; target) {
       ret ~= newSearch!(CFG.SingleSearch)(ary, trgt);
     }
@@ -156,6 +157,7 @@ private CFG.Output newSearch(CFG)(CFG.InputArray ary, CFG.InputTarget target, CF
     }
     return ret;
   } else {
+
     static assert(CFG.TARGETING == SearchTargeting.Delegate || CFG.TARGETING == SearchTargeting.Function);
     static if (CFG.MODE == SearchMode.First) {
       foreach(i, elem; ary) {
@@ -164,7 +166,22 @@ private CFG.Output newSearch(CFG)(CFG.InputArray ary, CFG.InputTarget target, CF
         }
       }
       return Ret.make();
+    } else static if (CFG.MODE == SearchMode.Once) {
+      ulong index = ary.length | (ary.length << 1); // By the time this doesn't work, you have bigger issues
+      foreach (i, elem; ary) {
+        if (target(elem)) {
+          if (index < ary.length) {
+            return Ret.make();
+          }
+          index = i;
+        }
+      }
+      if (index < ary.length) {
+        return Ret.make(getOut(&ary, i));
+      }
+      return Ret.make();
     }
+
   }
 }
 
