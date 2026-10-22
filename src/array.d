@@ -186,6 +186,17 @@ private CFG.Output newSearch(CFG)(CFG.InputArray ary, CFG.InputTarget target, CF
         ret += target(elem);
       }
       return ret;
+    } else static if (CFG.MODE == SearchMode.Nth) {
+    } else static if (CFG.MODE == SearchMode.All) {
+    } else static if (CFG.MODE == SearchMode.Contains) {
+      foreach (elem; ary) {
+        if (target(elem)) {
+          return true;
+        }
+      }
+      return false;
+    } else {
+      static assert(false);
     }
 
   }
