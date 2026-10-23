@@ -3,6 +3,7 @@ module dulib.array;
 import dt = dulib.types;
 import dl = dulib.logic;
 import dtmo = dulib.types.monads.option;
+import dtb = dulib.types.box;
 
 enum SearchMode {
   Once, First, Count, Nth, All, Contains
@@ -83,7 +84,7 @@ struct SearchConfig(T, SearchMode M = SearchMode.First, SearchOutput SO = Search
   alias BaseType = T;
   private static alias Remake(SearchMode m = M, SearchOutput so = SO, SearchTargeting st = ST, dt.Mutability am = M) = SearchConfig!(T, m, so, st, am);
 
-  static alias Output = SOT!(T, SO);
+  static alias Output = SOT!(T, SO).Out;
 
   static enum SearchOutput OUTPUT = SO;
   static enum SearchMode MODE = M;
@@ -91,7 +92,7 @@ struct SearchConfig(T, SearchMode M = SearchMode.First, SearchOutput SO = Search
   static enum dt.Mutability MUTABILITY = AM;
 
   static assert(dl.imply(SO != SearchOutput.Index, ST != SearchTargeting.Single));
-  alias Return = SearchOut!(M, T, SO);
+  alias Return = SearchOut!(M, T, SO).Out;
 
   static assert(dl.imply(AM != dt.Mut, ST == SearchTargeting.Multi));
   alias InputArray = dt.AsMut!(T, AM).Out[];
@@ -115,7 +116,11 @@ struct SearchConfig(T, SearchMode M = SearchMode.First, SearchOutput SO = Search
   }
 
   static if (ST != SearchTargeting.Single) {
-    alias SingleSearch = Self.ChangeTargeting(SearchTargeting.Single);
+    alias SingleSearch = Self.ChangeTargeting!(SearchTargeting.Single);
+  }
+
+  static if (ST != SearchTargeting.Delegate) {
+    alias DelegateSearch = Self.ChangeTargeting!(SearchTargeting.Delegate);
   }
 }
 
@@ -129,8 +134,8 @@ unittest {
   //pragma(msg, typeof(sc2).mangleof);
 }
 
-private SOT!(T, SO).Out getOutput(T, SearchOutput SO, dt.Mutability M)(dt.AsMut!(T, M)[]* ary, ulong index) {
-  static if (SO == SearchOut.Index) {
+private SOT!(T, SO).Out getOutput(T, SearchOutput SO, dt.Mutability M)(dt.AsMut!(T, M).Out[]* ary, ulong index) {
+  static if (SO == SearchOutput.Index) {
     return index;
   } else {
     static assert(SO == SeachOutput.Value);
@@ -138,12 +143,16 @@ private SOT!(T, SO).Out getOutput(T, SearchOutput SO, dt.Mutability M)(dt.AsMut!
   }
 }
 
-private CFG.Output newSearch(CFG)(CFG.InputArray ary, CFG.InputTarget target, CFG.INth nth = CFG.DefaultNth) {
-  static assert(CFG.mangleof == SearchConfig!(CFG.BaseType, CFG.MODE, CFG.OUTPUT, CFG.TARGETING, CFG.MUTABILITY));
+private CFG.Return newSearch(CFG)(CFG.InputArray ary, CFG.InputTarget target, CFG.INth nth = CFG.DefaultNth) {
+  // TODO: to transfer in contracts eventually
+  // TODO: single/value targeting without delegate boxing
+  static assert(CFG.mangleof == SearchConfig!(CFG.BaseType, CFG.MODE, CFG.OUTPUT, CFG.TARGETING, CFG.MUTABILITY).mangleof);
   alias Ret = typeof(return);
   alias getOut = getOutput!(CFG.BaseType, CFG.OUTPUT, CFG.MUTABILITY);
 
-  static if (CFG.TARGETING == SearchTargeting.Multi && CFG.MODE != SearchMode.Nth) {
+  static if (CFG.TARGETING == SearchTargeting.Single) {
+    return newSearch!(CFG.DelegateSearch)(ary, dtb.eqBox!(CFG.BaseType)(target), nth);
+  } else static if (CFG.TARGETING == SearchTargeting.Multi && CFG.MODE != SearchMode.Nth) {
     Ret ret = [];
 
     foreach (trgt; target) {
@@ -177,7 +186,7 @@ private CFG.Output newSearch(CFG)(CFG.InputArray ary, CFG.InputTarget target, CF
         }
       }
       if (index < ary.length) {
-        return Ret.make(getOut(&ary, i));
+        return Ret.make(getOut(&ary, index));
       }
       return Ret.make();
     } else static if (CFG.MODE == SearchMode.Count) {
@@ -216,6 +225,26 @@ private CFG.Output newSearch(CFG)(CFG.InputArray ary, CFG.InputTarget target, CF
   }
 }
 
+unittest {
+  alias search(cfg) = newSearch!(cfg); // newSearch is temp name, will make fixing this easier
+
+  alias Once = SearchConfig!(ulong, SearchMode.Once);
+  alias First = SearchConfig!(ulong, SearchMode.First);
+  alias Count = SearchConfig!(ulong, SearchMode.Count);
+  alias Nth = SearchConfig!(ulong, SearchMode.Nth);
+  alias All = SearchConfig!(ulong, SearchMode.All);
+  alias Contains = SearchConfig!(ulong, SearchMode.Contains);
+
+  alias once = search!(Once);
+  //alias first = search!(First);
+  //alias count = search!(Count);
+  //alias nth = search!(Nth);
+  //alias all = search!(all);
+  //alias contains = search!(Contains);
+
+  enum ulong[] test = [5, 1, 5, 2, 2, 5, 3, 3, 3, 5, 4, 4, 4, 4, 5];
+}
+
 SearchOut!(M, T).Out searchArray(T, SearchMode M = SearchMode.First, dt.Mutability I = dt.Mut)
   (dt.AsMut!(T[], I).Out ary, T target, ulong nth = 0) in {
 
@@ -233,7 +262,7 @@ SearchOut!(M, T).Out searchArray(T, SearchMode M = SearchMode.First, dt.Mutabili
 
   /*
     Pretty sure I could of reused the same loop, using condititonal
-    compilation inside instead to of saved some typing
+    compilation inside instead to have save some typing
 
     Sticking with this as it is
     A) already done
