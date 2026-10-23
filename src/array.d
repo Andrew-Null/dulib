@@ -243,6 +243,42 @@ unittest {
   alias contains = search!(Contains);
 
   enum ulong[] test = [5, 1, 5, 2, 2, 5, 3, 3, 3, 5, 4, 4, 4, 4, 5];
+
+  for (ulong cnt = 1; cnt <= 5; cnt++) {
+    assert(count(test, cnt) == cnt);
+    assert(all(test, cnt).length == cnt);
+
+  }
+
+  for (ulong val = 0; val < test.length; val++) {
+    assert((count(test, val) > 0) == contains(test, val));
+  }
+
+  auto o1 = once(test, 1);
+  auto f1 = first(test, 1);
+  auto n1 = nth(test, 1, 1);
+  assert(o1.isSome() && f1.isSome() && n1.get());
+  assert((o1.get() == 1) && (o1.get() == f1.get()) && (o1.get() == n1.get()));
+
+  for (ulong cnt = 2; cnt <= 5; cnt++) {
+    auto o = once(test, cnt);
+    auto f = first(test, cnt);
+    auto n = nth(test, cnt, 1);
+    auto np = nth(test, cnt, 2);
+
+    assert(o.isNone);
+    assert(f.isSome() && n.isSome() && np.isSome());
+    assert(f.get() == n.get());
+    assert(n.get() < np.get());
+    assert(((np.get() == (n.get() + 1)) && (cnt != 5)) ^ ((np.get() == n.get() + 2) && (cnt == 5)));
+  }
+
+  assert(count(test, 6) == 0);
+  assert(first(test, 6).isNone());
+  assert(once(test, 6).isNone());
+  assert(nth(test, 6, 1).isNone());
+  assert(all(test, 6) == []);
+
 }
 
 SearchOut!(M, T).Out searchArray(T, SearchMode M = SearchMode.First, dt.Mutability I = dt.Mut)
