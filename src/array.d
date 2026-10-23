@@ -236,11 +236,11 @@ unittest {
   alias Contains = SearchConfig!(ulong, SearchMode.Contains);
 
   alias once = search!(Once);
-  //alias first = search!(First);
-  //alias count = search!(Count);
-  //alias nth = search!(Nth);
-  //alias all = search!(all);
-  //alias contains = search!(Contains);
+  alias first = search!(First);
+  alias count = search!(Count);
+  alias nth = search!(Nth);
+  alias all = search!(All);
+  alias contains = search!(Contains);
 
   enum ulong[] test = [5, 1, 5, 2, 2, 5, 3, 3, 3, 5, 4, 4, 4, 4, 5];
 }
