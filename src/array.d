@@ -44,7 +44,7 @@ private template SearchTarget(T, SearchTargeting ST = SearchTargeting.Single, dt
   static if (ST == Trgt.Single) {
     alias Out = T;
   } else static if (ST == Trgt.Multi) {
-    alias Out = dt.AsMut(T[], AM);
+    alias Out = dt.AsMut!(T[], AM);
   } else static if (ST == Trgt.Function) {
     alias Out = bool function(T);
   } else {
@@ -72,17 +72,18 @@ unittest {
   ulong[][] unflat = [[0,1,2],[3],[4,5],[6,7,8,9],[],[10]];
   ulong[] flat = flatten(unflat);
 
-  foreach(i,n;flat) {
+  foreach(i,n; flat) {
     assert(i == n);
   }
 }
 
-struct SearchConfig(T, SearchMode M = SearchMode.First, SearchOutput SO = SearchOutput.Index,
+struct SearchConfig(T, SearchMode M = SearchMode.First,
                     SearchTargeting ST = SearchTargeting.Single,
+                    SearchOutput SO = SearchOutput.Index,
                     dt.Mutability AM = dt.Mut) {
-  alias Self = SearchConfig!(T, M, SO, ST, AM);
+  alias Self = SearchConfig!(T, M, ST, SO, AM);
   alias BaseType = T;
-  private static alias Remake(SearchMode m = M, SearchOutput so = SO, SearchTargeting st = ST, dt.Mutability am = M) = SearchConfig!(T, m, so, st, am);
+  private static alias Remake(SearchMode m = M, SearchOutput so = SO, SearchTargeting st = ST, dt.Mutability am = M) = SearchConfig!(T, m, st, so, am);
 
   static alias Output = SOT!(T, SO).Out;
 
@@ -146,7 +147,7 @@ private SOT!(T, SO).Out getOutput(T, SearchOutput SO, dt.Mutability M)(dt.AsMut!
 private CFG.Return newSearch(CFG)(CFG.InputArray ary, CFG.InputTarget target, CFG.INth nth = CFG.DefaultNth) {
   // TODO: to transfer in contracts eventually
   // TODO: single/value targeting without delegate boxing
-  static assert(CFG.mangleof == SearchConfig!(CFG.BaseType, CFG.MODE, CFG.OUTPUT, CFG.TARGETING, CFG.MUTABILITY).mangleof);
+  static assert(CFG.mangleof == SearchConfig!(CFG.BaseType, CFG.MODE, CFG.TARGETING, CFG.OUTPUT, CFG.MUTABILITY).mangleof);
   alias Ret = typeof(return);
   alias getOut = getOutput!(CFG.BaseType, CFG.OUTPUT, CFG.MUTABILITY);
 
@@ -223,6 +224,17 @@ private CFG.Return newSearch(CFG)(CFG.InputArray ary, CFG.InputTarget target, CF
     }
 
   }
+}
+
+unittest {
+  alias search(cfg) = newSearch!(cfg); // newSearch is temp name, will make fixing this easier
+
+  alias Once = SearchConfig!(ulong, SearchMode.Once, SearchTargeting.Multi);
+  alias First = SearchConfig!(ulong, SearchMode.First);
+  alias Count = SearchConfig!(ulong, SearchMode.Count);
+  alias Nth = SearchConfig!(ulong, SearchMode.Nth);
+  alias All = SearchConfig!(ulong, SearchMode.All);
+  alias Contains = SearchConfig!(ulong, SearchMode.Contains);
 }
 
 unittest {
