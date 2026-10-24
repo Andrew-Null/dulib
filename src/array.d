@@ -230,11 +230,11 @@ unittest {
   alias search(cfg) = newSearch!(cfg); // newSearch is temp name, will make fixing this easier
 
   alias Once = SearchConfig!(ulong, SearchMode.Once, SearchTargeting.Multi);
-  alias First = SearchConfig!(ulong, SearchMode.First);
-  alias Count = SearchConfig!(ulong, SearchMode.Count);
-  alias Nth = SearchConfig!(ulong, SearchMode.Nth);
-  alias All = SearchConfig!(ulong, SearchMode.All);
-  alias Contains = SearchConfig!(ulong, SearchMode.Contains);
+  alias First = Once.ChangeMode!(SearchMode.First);
+  alias Count = Once.ChangeMode!(SearchMode.Count);
+  alias Nth = Once.ChangeMode!(SearchMode.Nth);
+  alias All = Once.ChangeMode!(SearchMode.All);
+  alias Contains = Once.ChangeMode!(SearchMode.Contains);
 }
 
 unittest {
