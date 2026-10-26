@@ -39,7 +39,6 @@ private template SearchOut(SearchMode SM, T, SearchOutput SO = SearchOutput.Inde
 }
 
 private template SearchTarget(T, SearchTargeting ST = SearchTargeting.Single, dt.Mutability AM = dt.Mut) {
-  //static assert(dl.imply(AM != dt.Mut, ST == SearchTargeting.Multi));
   alias Trgt = SearchTargeting;
   static if (ST == Trgt.Single) {
     alias Out = T;
@@ -99,7 +98,6 @@ struct SearchConfig(T, SearchMode M = SearchMode.First,
     alias Return = SearchOut!(M, T, SO).Out[];
   }
 
-  //static assert(dl.imply(AM != dt.Mut, ST == SearchTargeting.Multi));
   alias InputArray = dt.AsMut!(T, AM).Out[];
   static if (ST == SearchTargeting.Multi) {
     alias INth = ulong[];
