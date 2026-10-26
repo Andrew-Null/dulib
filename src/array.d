@@ -138,7 +138,8 @@ private SOT!(T, SO).Out getOutput(T, SearchOutput SO, dt.Mutability M)(dt.AsMut!
   }
 }
 
-private CFG.Return newSearch(CFG)(CFG.InputArray ary, CFG.InputTarget target, CFG.INth nth = CFG.DefaultNth) {
+CFG.Return newSearch(CFG)(CFG.InputArray ary, CFG.InputTarget target, CFG.INth nth = CFG.DefaultNth) {
+  pragma(msg, "dulib.array.newSearch is to be renamed shortly");
   // TODO: to transfer in contracts eventually
   // TODO: single/value targeting without delegate boxing
   static assert(CFG.mangleof == SearchConfig!(CFG.BaseType, CFG.MODE, CFG.TARGETING, CFG.OUTPUT, CFG.MUTABILITY).mangleof);
