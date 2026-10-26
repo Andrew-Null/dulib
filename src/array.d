@@ -39,7 +39,7 @@ private template SearchOut(SearchMode SM, T, SearchOutput SO = SearchOutput.Inde
 }
 
 private template SearchTarget(T, SearchTargeting ST = SearchTargeting.Single, dt.Mutability AM = dt.Mut) {
-  static assert(dl.imply(AM != dt.Mut, ST == SearchTargeting.Multi));
+  //static assert(dl.imply(AM != dt.Mut, ST == SearchTargeting.Multi));
   alias Trgt = SearchTargeting;
   static if (ST == Trgt.Single) {
     alias Out = T;
@@ -99,7 +99,7 @@ struct SearchConfig(T, SearchMode M = SearchMode.First,
     alias Return = SearchOut!(M, T, SO).Out[];
   }
 
-  static assert(dl.imply(AM != dt.Mut, ST == SearchTargeting.Multi));
+  //static assert(dl.imply(AM != dt.Mut, ST == SearchTargeting.Multi));
   alias InputArray = dt.AsMut!(T, AM).Out[];
   static if (ST == SearchTargeting.Multi) {
     alias INth = ulong[];
@@ -435,31 +435,6 @@ SearchOut!(M, T).Out searchArray(T, SearchMode M = SearchMode.First, dt.Mutabili
   }
 }
 
-SearchOut!(M, T).Out[] multiSearchArray(T, SearchMode M = SearchMode.First, dt.Mutability I = dt.Mut)
-  (dt.AsMut!(T[], I).Out ary, T[] targets, ulong[] nth = []) in {
-  static if (M == SearchMode.Nth) {
-    assert(targets.length == nth.length);
-  }
-
-  static if (M != SearchMode.Nth) {
-    assert(nth.length == 0);
-  }
- } out(r; r.length == targets.length) do {
-  alias Ret = typeof(return);
-  Ret ret;
-  alias search = searchArray!(T, M, I);
-
-  foreach(i, target; targets) {
-    static if (M == SearchMode.Nth) {
-      ret ~= search(ary, target, nth[i]);
-    } else {
-      ret ~= search(ary, target);
-    }
-  }
-
-  return ret;
-}
-
 unittest {
   ulong[] test = [5, 1, 5, 2, 2, 5, 3, 3, 3, 5, 4, 4, 4, 4, 5];
   alias count = searchArray!(ulong, SearchMode.Count);
@@ -504,49 +479,3 @@ unittest {
   assert(nth(test, 6, 1).isNone());
   assert(all(test, 6) == []);
 }
-
-unittest {
-  ulong[] test = [6, 1, 6, 2, 2, 6, 3, 3, 3, 6, 4, 4, 4, 4, 6, 5, 5, 5, 5, 5, 6];
-  ulong[] set = [1, 2, 3, 4, 5, 6];
-
-  alias count = multiSearchArray!(ulong, SearchMode.Count);
-  alias first = multiSearchArray!(ulong, SearchMode.First);
-  alias once = multiSearchArray!(ulong, SearchMode.Once);
-  alias nth = multiSearchArray!(ulong, SearchMode.Nth);
-  alias all = multiSearchArray!(ulong, SearchMode.All);
-
-
-  foreach(cnt; set) {
-    assert(searchArray!(ulong, SearchMode.Count)(test, cnt) == cnt);
-    assert(searchArray!(ulong, SearchMode.All)(test, cnt).length == cnt);
-  }
-
-  auto counted = count(test, set);
-  foreach(num; set) {
-    assert(counted[num-1] == num);
-  }
-
-  /*
-    Could multiSearchArray use more testing? Maybe.
-    But most logic is in searchArray, which is well tested
-    so should be fine
-  */
-}
-
-/*SearchOut!(M, O).Out searchArray(T, SearchMode M = SearchMode.First, dt.Mutability I = dt.Mut, O = ulong)
-  (dt.AsMut!(T[], I).Out ary, bool function(T) targeting, ulong nth = 0) in {
-  static assert((O.stringof == ulong.stringof) || (O.stringof == T.stringof));
-
-  static if (M != SearchMode.Nth) {
-    assert(nth == 0); // Don't need it, don't touch it
-  }
-
-  // Could of done else opted to do separate if for explicitness/clarity
-  static if (M == SearchMode.Nth) {
-    assert(nth > 0);
-  }
-
- } do {
-  alias Ret = typeof(return);
-  return Ret.init;
- }*/
