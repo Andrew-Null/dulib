@@ -44,7 +44,7 @@ private template SearchTarget(T, SearchTargeting ST = SearchTargeting.Single, dt
   static if (ST == Trgt.Single) {
     alias Out = T;
   } else static if (ST == Trgt.Multi) {
-    alias Out = dt.AsMut!(T[], AM);
+    alias Out = dt.AsMut!(T[], AM).Out;
   } else static if (ST == Trgt.Function) {
     alias Out = bool function(T);
   } else {
@@ -93,7 +93,11 @@ struct SearchConfig(T, SearchMode M = SearchMode.First,
   static enum dt.Mutability MUTABILITY = AM;
 
   static assert(dl.imply(SO != SearchOutput.Index, ST != SearchTargeting.Single));
-  alias Return = SearchOut!(M, T, SO).Out;
+  static if (ST != SearchTargeting.Multi) {
+    alias Return = SearchOut!(M, T, SO).Out;
+  } else {
+    alias Return = SearchOut!(M, T, SO).Out[];
+  }
 
   static assert(dl.imply(AM != dt.Mut, ST == SearchTargeting.Multi));
   alias InputArray = dt.AsMut!(T, AM).Out[];
@@ -234,6 +238,37 @@ unittest {
     assert(matches[0] == i);
   }
 
+  alias count = search!(Count);
+  alias scount = search!(Count.SingleSearch);
+  alias sall = search!(All.SingleSearch);
+  alias contains = search!(Contains);
+
+  ulong[] test = [6, 1, 6, 2, 2, 6, 3, 3, 3, 6, 4, 4, 4, 4, 6, 5, 5, 5, 5, 5, 6];
+  ulong[] set = [1, 2, 3, 4, 5, 6];
+
+  auto cont = contains(test, set);
+  foreach(c; cont) {
+    assert(c);
+  }
+
+  foreach(cnt; set) {
+    assert(scount(test, cnt) == cnt);
+    assert(sall(test, cnt).length == cnt);
+  }
+
+  auto counted = count(test, set);
+  foreach(num; set) {
+    assert(counted[num-1] == num);
+  }
+
+  // Might not be tested, but at least being initialized
+  alias once = search!(Once);
+  alias first = search!(First);
+  alias nth = search!(Nth);
+  alias all = search!(All);
+
+  // Given multi searches 'map' Single searches not as much testing
+  // needed
 }
 
 unittest {
