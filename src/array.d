@@ -125,16 +125,6 @@ struct SearchConfig(T, SearchMode M = SearchMode.First,
   }
 }
 
-unittest {
-  SearchConfig!(string) sc = SearchConfig!(string).init;
-  SearchConfig!(ulong) sc2 = SearchConfig!(ulong).init;
-  typeof(sc).ChangeMode!(SearchMode.All) sc3;
-  //pragma(msg, SearchConfig.stringof);
-  //pragma(msg, SearchConfig.mangleof);
-  //pragma(msg, typeof(sc).mangleof);
-  //pragma(msg, typeof(sc2).mangleof);
-}
-
 private SOT!(T, SO).Out getOutput(T, SearchOutput SO, dt.Mutability M)(dt.AsMut!(T, M).Out[]* ary, ulong index) {
   static if (SO == SearchOutput.Index) {
     return index;
@@ -235,6 +225,15 @@ unittest {
   alias Nth = Once.ChangeMode!(SearchMode.Nth);
   alias All = Once.ChangeMode!(SearchMode.All);
   alias Contains = Once.ChangeMode!(SearchMode.Contains);
+
+  enum string[] mangles = [Once.mangleof, First.mangleof, Count.mangleof, Nth.mangleof, All.mangleof, Contains.mangleof];
+  foreach(i, mang; mangles) {
+    alias all = search!(SearchConfig!(string, SearchMode.All, SearchTargeting.Single));
+    auto matches = all(mangles, mang);
+    assert(matches.length == 1);
+    assert(matches[0] == i);
+  }
+
 }
 
 unittest {
