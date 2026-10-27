@@ -125,6 +125,18 @@ struct SearchConfig(T, SearchMode M = SearchMode.First,
   static if (ST != SearchTargeting.Delegate) {
     alias DelegateSearch = Self.ChangeTargeting!(SearchTargeting.Delegate);
   }
+
+  static if (ST != SearchTargeting.Multi) {
+    alias MultiSearch = Self.ChangeTargeting!(SearchTargeting.Multi);
+
+    bool check(BaseType elem, InputTarget target) {
+      static if (ST == SearchTargeting.Single) {
+        return elem == target;
+      } else {
+        return target(elem);
+      }
+    }
+  }
 }
 
 private SOT!(T, SO).Out getOutput(T, SearchOutput SO, dt.Mutability M)(dt.AsMut!(T, M).Out[]* ary, ulong index) {
