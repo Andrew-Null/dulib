@@ -129,7 +129,7 @@ struct SearchConfig(T, SearchMode M = SearchMode.First,
   static if (ST != SearchTargeting.Multi) {
     alias MultiSearch = Self.ChangeTargeting!(SearchTargeting.Multi);
 
-    bool check(BaseType elem, InputTarget target) {
+    static bool check(BaseType elem, InputTarget target) {
       static if (ST == SearchTargeting.Single) {
         return elem == target;
       } else {
@@ -156,9 +156,7 @@ CFG.Return newSearch(CFG)(CFG.InputArray ary, CFG.InputTarget target, CFG.INth n
   alias Ret = typeof(return);
   alias getOut = getOutput!(CFG.BaseType, CFG.OUTPUT, CFG.MUTABILITY);
 
-  static if (CFG.TARGETING == SearchTargeting.Single) {
-    return newSearch!(CFG.DelegateSearch)(ary, dtb.eqBox!(CFG.BaseType)(target), nth);
-  } else static if (CFG.TARGETING == SearchTargeting.Multi && CFG.MODE != SearchMode.Nth) {
+  static if (CFG.TARGETING == SearchTargeting.Multi && CFG.MODE != SearchMode.Nth) {
     Ret ret = [];
 
     foreach (trgt; target) {
@@ -173,10 +171,10 @@ CFG.Return newSearch(CFG)(CFG.InputArray ary, CFG.InputTarget target, CFG.INth n
     return ret;
   } else {
 
-    static assert(CFG.TARGETING == SearchTargeting.Delegate || CFG.TARGETING == SearchTargeting.Function);
+    static assert(CFG.TARGETING != SearchTargeting.Multi);
     static if (CFG.MODE == SearchMode.First) {
       foreach(i, elem; ary) {
-        if (target(elem)) {
+        if (CFG.check(elem, target)) {
           return Ret.make(getOut(&ary, i));
         }
       }
@@ -184,7 +182,7 @@ CFG.Return newSearch(CFG)(CFG.InputArray ary, CFG.InputTarget target, CFG.INth n
     } else static if (CFG.MODE == SearchMode.Once) {
       ulong index = ary.length | (ary.length << 1); // By the time this doesn't work, you have bigger issues
       foreach (i, elem; ary) {
-        if (target(elem)) {
+        if (CFG.check(elem, target)) {
           if (index < ary.length) {
             return Ret.make();
           }
@@ -198,12 +196,12 @@ CFG.Return newSearch(CFG)(CFG.InputArray ary, CFG.InputTarget target, CFG.INth n
     } else static if (CFG.MODE == SearchMode.Count) {
       ulong ret = 0;
       foreach(elem; ary) {
-        ret += target(elem);
+        ret += CFG.check(elem, target);
       }
       return ret;
     } else static if (CFG.MODE == SearchMode.Nth) {
       foreach (i, elem; ary) {
-        nth -= target(elem);
+        nth -= CFG.check(elem, target);
         if (nth == 0) {
           return Ret.make(getOut(&ary, i));
         }
@@ -212,14 +210,14 @@ CFG.Return newSearch(CFG)(CFG.InputArray ary, CFG.InputTarget target, CFG.INth n
     } else static if (CFG.MODE == SearchMode.All) {
       Ret ret = [];
       foreach (i, elem; ary) {
-        if (target(elem)) {
+        if (CFG.check(elem, target)) {
           ret ~= getOut(&ary, i);
         }
       }
       return ret;
     } else static if (CFG.MODE == SearchMode.Contains) {
       foreach (elem; ary) {
-        if (target(elem)) {
+        if (CFG.check(elem, target)) {
           return true;
         }
       }
