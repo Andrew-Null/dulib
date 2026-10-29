@@ -148,7 +148,26 @@ private SOT!(T, SO).Out getOutput(T, SearchOutput SO, dt.Mutability M)(dt.AsMut!
   }
 }
 
-CFG.Return newSearch(CFG)(CFG.InputArray ary, CFG.InputTarget target, CFG.INth nth = CFG.DefaultNth) {
+CFG.Return newSearch(CFG)(CFG.InputArray ary, CFG.InputTarget target, CFG.INth nth = CFG.DefaultNth) in {
+  static if (CFG.TARGETING != SearchTargeting.Multi) {
+    static if (CFG.MODE != SearchMode.Nth) {
+      assert(nth == 0); // Don't need it, don't touch it
+    }
+    // Could of done else opted to do separate if for explicitness/clarity
+    static if (CFG.MODE == SearchMode.Nth) {
+      assert(nth > 0);
+    }
+  } else {
+    static assert(CFG.TARGETING == SearchTargeting.Multi);
+    static if (CFG.MODE != SearchMode.Nth) {
+      assert(nth == []); // Don't need it, don't touch it
+    }
+    // Could of done else opted to do separate if for explicitness/clarity
+    static if (CFG.MODE == SearchMode.Nth) {
+      assert(nth.length == target.length);
+    }
+  }
+ } do{
   pragma(msg, "dulib.array.newSearch is to be renamed shortly");
   // TODO: to transfer in contracts eventually
   // TODO: single/value targeting without delegate boxing
@@ -338,15 +357,6 @@ unittest {
 
 SearchOut!(M, T).Out searchArray(T, SearchMode M = SearchMode.First, dt.Mutability I = dt.Mut)
   (dt.AsMut!(T[], I).Out ary, T target, ulong nth = 0) in {
-
-  static if (M != SearchMode.Nth) {
-    assert(nth == 0); // Don't need it, don't touch it
-  }
-
-  // Could of done else opted to do separate if for explicitness/clarity
-  static if (M == SearchMode.Nth) {
-    assert(nth > 0);
-  }
 
  } do {
   alias Ret = typeof(return);
