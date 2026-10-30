@@ -148,7 +148,7 @@ private SOT!(T, SO).Out getOutput(T, SearchOutput SO, dt.Mutability M)(dt.AsMut!
   }
 }
 
-CFG.Return newSearch(CFG)(CFG.InputArray ary, CFG.InputTarget target, CFG.INth nth = CFG.DefaultNth) in {
+CFG.Return arraySearch(CFG)(CFG.InputArray ary, CFG.InputTarget target, CFG.INth nth = CFG.DefaultNth) in {
   static if (CFG.TARGETING != SearchTargeting.Multi) {
     static if (CFG.MODE != SearchMode.Nth) {
       assert(nth == 0); // Don't need it, don't touch it
@@ -184,7 +184,6 @@ CFG.Return newSearch(CFG)(CFG.InputArray ary, CFG.InputTarget target, CFG.INth n
        instead of them practically overlapping
   */
 
-  pragma(msg, "dulib.array.newSearch is to be renamed shortly");
   static assert(CFG.mangleof == SearchConfig!(CFG.BaseType, CFG.MODE, CFG.TARGETING, CFG.OUTPUT, CFG.MUTABILITY).mangleof);
   alias Ret = typeof(return);
   alias getOut = getOutput!(CFG.BaseType, CFG.OUTPUT, CFG.MUTABILITY);
@@ -193,13 +192,13 @@ CFG.Return newSearch(CFG)(CFG.InputArray ary, CFG.InputTarget target, CFG.INth n
     Ret ret = [];
 
     foreach (trgt; target) {
-      ret ~= newSearch!(CFG.SingleSearch)(ary, trgt);
+      ret ~= arraySearch!(CFG.SingleSearch)(ary, trgt);
     }
     return ret;
   } else static if (CFG.TARGETING == SearchTargeting.Multi && CFG.MODE == SearchMode.Nth) {
     Ret ret = [];
     foreach (i, trgt; target) {
-      ret ~= newSearch!(CFG.SingleSearch)(ary, trgt, nth[i]);
+      ret ~= arraySearch!(CFG.SingleSearch)(ary, trgt, nth[i]);
     }
     return ret;
   } else {
@@ -265,7 +264,7 @@ CFG.Return newSearch(CFG)(CFG.InputArray ary, CFG.InputTarget target, CFG.INth n
 }
 
 unittest {
-  alias search(cfg) = newSearch!(cfg); // newSearch is temp name, will make fixing this easier
+  alias search(cfg) = arraySearch!(cfg);
 
   alias Once = SearchConfig!(ulong, SearchMode.Once, SearchTargeting.Multi);
   alias First = Once.ChangeMode!(SearchMode.First);
@@ -316,7 +315,7 @@ unittest {
 }
 
 unittest {
-  alias search(cfg) = newSearch!(cfg); // newSearch is temp name, will make fixing this easier
+  alias search(cfg) = arraySearch!(cfg);
 
   alias Once = SearchConfig!(ulong, SearchMode.Once);
   alias First = SearchConfig!(ulong, SearchMode.First);

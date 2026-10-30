@@ -75,11 +75,11 @@ struct ArgVec(bool MOCK = false) {
   //}
 
   public auto findArg(da.SearchMode M)(string arg, ulong nth = 0) {
-    return da.newSearch!(da.SearchConfig!(string, M, da.SearchTargeting.Single, da.SearchOutput.Index, dt.Const))(this.args, arg, nth);
+    return da.arraySearch!(da.SearchConfig!(string, M, da.SearchTargeting.Single, da.SearchOutput.Index, dt.Const))(this.args, arg, nth);
   }
 
   public auto findArgs(da.SearchMode M)(string[] args, ulong[] nths = []) {
-    return da.newSearch!(da.SearchConfig!(string, M, da.SearchTargeting.Multi, da.SearchOutput.Index, dt.Const))(this.args, args, nths);
+    return da.arraySearch!(da.SearchConfig!(string, M, da.SearchTargeting.Multi, da.SearchOutput.Index, dt.Const))(this.args, args, nths);
   }
 
   public pure bool containsAny(string[] targets) {
