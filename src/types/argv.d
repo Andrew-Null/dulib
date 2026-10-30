@@ -75,7 +75,7 @@ struct ArgVec(bool MOCK = false) {
   //}
 
   public auto findArg(da.SearchMode M)(string arg, ulong nth = 0) {
-    return da.searchArray!(string, M, dt.Const)(this.args, arg, nth);
+    return da.newSearch!(da.SearchConfig!(string, M, da.SearchTargeting.Single, da.SearchOutput.Index, dt.Const))(this.args, arg, nth);
   }
 
   public auto findArgs(da.SearchMode M)(string[] args, ulong[] nths = []) {
