@@ -155,16 +155,21 @@ CFG.Return newSearch(CFG)(CFG.InputArray ary, CFG.InputTarget target, CFG.INth n
     }
     // Could of done else opted to do separate if for explicitness/clarity
     static if (CFG.MODE == SearchMode.Nth) {
-      assert(nth > 0);
+      assert(nth > 0, "nth mode is one indexed");
     }
-  } else {
+  }
+
+  static if (CFG.TARGETING == SearchTargeting.Multi){
     static assert(CFG.TARGETING == SearchTargeting.Multi);
     static if (CFG.MODE != SearchMode.Nth) {
       assert(nth == []); // Don't need it, don't touch it
     }
-    // Could of done else opted to do separate if for explicitness/clarity
+
     static if (CFG.MODE == SearchMode.Nth) {
       assert(nth.length == target.length);
+      foreach(n; nth) {
+        assert(n > 0, "nth mode is one indexed");
+      }
     }
   }
  } do{
