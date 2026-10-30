@@ -173,9 +173,18 @@ CFG.Return newSearch(CFG)(CFG.InputArray ary, CFG.InputTarget target, CFG.INth n
     }
   }
  } do{
+
+  /*
+    Pretty sure I could of reused the same loop, using condititonal
+    compilation inside instead to have save some typing
+
+    Sticking with this as it is
+    A) already done
+    B) Probably easier to read, with each version having its own block
+       instead of them practically overlapping
+  */
+
   pragma(msg, "dulib.array.newSearch is to be renamed shortly");
-  // TODO: to transfer in contracts eventually
-  // TODO: single/value targeting without delegate boxing
   static assert(CFG.mangleof == SearchConfig!(CFG.BaseType, CFG.MODE, CFG.TARGETING, CFG.OUTPUT, CFG.MUTABILITY).mangleof);
   alias Ret = typeof(return);
   alias getOut = getOutput!(CFG.BaseType, CFG.OUTPUT, CFG.MUTABILITY);
@@ -204,7 +213,9 @@ CFG.Return newSearch(CFG)(CFG.InputArray ary, CFG.InputTarget target, CFG.INth n
       }
       return Ret.make();
     } else static if (CFG.MODE == SearchMode.Once) {
-      ulong index = ary.length | (ary.length << 1); // By the time this doesn't work, you have bigger issues
+      ulong index = ulong.max; // By the time this doesn't work, you have bigger issues
+      assert(index > ary.length);
+
       foreach (i, elem; ary) {
         if (CFG.check(elem, target)) {
           if (index < ary.length) {
@@ -366,15 +377,6 @@ SearchOut!(M, T).Out searchArray(T, SearchMode M = SearchMode.First, dt.Mutabili
  } do {
   alias Ret = typeof(return);
 
-  /*
-    Pretty sure I could of reused the same loop, using condititonal
-    compilation inside instead to have save some typing
-
-    Sticking with this as it is
-    A) already done
-    B) Probably easier to read, with each version having its own block
-       instead of them practically overlapping
-  */
 
   static if (M == SearchMode.Count) {
 
