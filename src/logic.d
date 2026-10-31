@@ -3,6 +3,10 @@ module dulib.logic;
 import st = std.traits;
 import sio = std.stdio;
 
+import dtp = dulib.types.pair;
+import dtmo = dulib.types.monads.option;
+import dt = dulib.types;
+
 pragma(inline, true);
 bool imply(bool a, bool b) {
   if (a) return b;
@@ -94,4 +98,40 @@ unittest {
   assert(truthy(false, &l, &r) == &r);
 
   assert(isUnittest());
+}
+
+private alias ReDuo = dtp.Duo!(bool, bool, "find", "ret", dt.IMut);
+private alias ReduceType = dtmo.Option!(ReDuo, dt.IMut);
+private alias RD = ReDuo;
+private alias RT = ReduceType;
+enum ReduceMode : ReduceType {
+  And = RT.make(RD(false, false)),
+
+  // might have nand and nor mixed up
+  NAnd = RT.make(RD(false, true)),
+  NOr = RT.make(RD(true, false)),
+
+  Or = RT.make(RD(true, true)),
+
+  NXor = RT.make() //homogenous
+}
+
+bool reduce(ReduceMode M)(bool[] ary) {
+  static if (M.isSome()) {
+    enum ReDuo cfg = M.get();
+    foreach(b; ary) {
+      if (b == cfg.find) return cfg.ret;
+    }
+    return !cfg.ret;
+  } else {
+    static assert(M == ReduceMode.NXor);
+    bool and = true;
+    bool or = false;
+    foreach (b; ary) {
+      and = and && b;
+      or = or || b;
+    }
+
+    return and || !or;
+  }
 }
