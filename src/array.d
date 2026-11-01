@@ -109,6 +109,7 @@ struct SearchConfig(T, SearchMode M = SearchMode.First,
 
   alias InputTarget = SearchTarget!(T, ST, AM).Out;
 
+  static alias ChangeType(Ty) = SearchConfig!(Ty, M, ST, SO, AM);
   static alias ChangeMode(SearchMode sm) = Remake!(sm, SO, ST, AM);
   static alias ChangeOutput(SearchOutput so) = Remake!(M, so, ST, AM);
   static alias ChangeTargeting(SearchTargeting st) = Remake!(M, SO, st, AM);
@@ -312,6 +313,8 @@ unittest {
 
   // Given multi searches 'map' Single searches not as much testing
   // needed
+
+  alias NewType = Once.ChangeType!(string);
 }
 
 unittest {
