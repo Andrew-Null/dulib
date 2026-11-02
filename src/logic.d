@@ -8,7 +8,7 @@ import dtmo = dulib.types.monads.option;
 import dt = dulib.types;
 
 pragma(inline, true);
-bool imply(bool a, bool b) {
+pure bool imply(bool a, bool b) {
   if (a) return b;
   return true;
 }
@@ -19,7 +19,7 @@ bool isUnittest() pure {
 }
 
 
-T truthy(T)(bool b, T t, T f) {
+pure T truthy(T)(bool b, T t, T f) {
   static if (st.isPointer!(T)) {
     //sio.writeln("b1");
     static assert(T.sizeof == ulong.sizeof);
@@ -116,7 +116,7 @@ enum ReduceMode : ReduceType {
   NXor = RT.make() //homogenous
 }
 
-bool reduce(ReduceMode M)(bool[] ary) {
+pure bool reduce(ReduceMode M)(bool[] ary) {
   static if (M.isSome()) {
     enum ReDuo cfg = M.get();
     foreach(b; ary) {
