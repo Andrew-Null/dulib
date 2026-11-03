@@ -1,4 +1,4 @@
-module dulib.array;
+module dulib.search.array;
 
 import dt = dulib.types;
 import dl = dulib.logic;
