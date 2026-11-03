@@ -7,7 +7,7 @@ import dt = dulib.types;
 import dl = dulib.logic;
 import dp = dulib.paths;
 import dtf = dulib.types.filesystem;
-import da = dulib.array;
+import das = dulib.array.search;
 
 alias Flagdex = dtmo.Option!(ulong);
 
@@ -74,12 +74,12 @@ struct ArgVec(bool MOCK = false) {
   //  return Flagdex.make();
   //}
 
-  public auto findArg(da.SearchMode M)(string arg, ulong nth = 0) {
-    return da.arraySearch!(da.SearchConfig!(string, M, da.SearchTargeting.Single, da.SearchOutput.Index, dt.Const))(this.args, arg, nth);
+  public auto findArg(das.SearchMode M)(string arg, ulong nth = 0) {
+    return das.arraySearch!(das.SearchConfig!(string, M, das.SearchTargeting.Single, das.SearchOutput.Index, dt.Const))(this.args, arg, nth);
   }
 
-  public auto findArgs(da.SearchMode M)(string[] args, ulong[] nths = []) {
-    return da.arraySearch!(da.SearchConfig!(string, M, da.SearchTargeting.Multi, da.SearchOutput.Index, dt.Const))(this.args, args, nths);
+  public auto findArgs(das.SearchMode M)(string[] args, ulong[] nths = []) {
+    return das.arraySearch!(das.SearchConfig!(string, M, das.SearchTargeting.Multi, das.SearchOutput.Index, dt.Const))(this.args, args, nths);
   }
 
   public pure bool containsAny(string[] targets) {
@@ -100,10 +100,10 @@ unittest {
 
   alias AV = ArgVec!(true);
   AV count = AV.mock("not an exe", ["-b", "-a", "-a", "-b", "-c", "-b"]);
-  assert(count.findArg!(da.SearchMode.Count)("-a") == 2);
-  assert(count.findArg!(da.SearchMode.Count)("-b") == 3);
-  assert(count.findArg!(da.SearchMode.Count)("-c") == 1);
-  assert(count.findArgs!(da.SearchMode.Count)(["-a", "-b", "-c"]) == [2, 3, 1]);
+  assert(count.findArg!(das.SearchMode.Count)("-a") == 2);
+  assert(count.findArg!(das.SearchMode.Count)("-b") == 3);
+  assert(count.findArg!(das.SearchMode.Count)("-c") == 1);
+  assert(count.findArgs!(das.SearchMode.Count)(["-a", "-b", "-c"]) == [2, 3, 1]);
 
   assert(count.containsAny(["-z", "-y", "-x", "-a"]));
   assert(!count.containsAny(["-z", "-y", "-x"]));
