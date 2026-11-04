@@ -27,3 +27,27 @@ unittest {
   assert(unwrapped.length > start.length);
 
 }
+
+dtmo.Option!(T[]) setPrepend(T)(T[] ary, T neo) {
+  alias Ret = typeof(return);
+  alias CFG = das.SearchConfig!(T).ChangeMode!(das.SearchMode.Contains);
+  if (das.arraySearch!(CFG)(ary, neo)) {
+    return Ret.make();
+  }
+
+  return Ret.make(neo ~ ary);
+}
+
+unittest {
+  ulong[] start = [1, 2, 3];
+  immutable ulong initLen = start.length;
+
+  assert(setPrepend(start, 3).isNone());
+
+  auto next = setPrepend(start, 0);
+  assert(next.isSome());
+
+  ulong[] unwrapped = next.get();
+  assert(unwrapped.length > start.length);
+
+}
