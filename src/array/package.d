@@ -20,9 +20,9 @@ unittest {
   ulong[] start = [0, 1, 2];
   immutable ulong initLen = start.length;
 
-  assert(setAppend(start, 0).isNone());
+  assert(setPostcat(start, 0).isNone());
 
-  auto next = setAppend(start, 3);
+  auto next = setPostcat(start, 3);
   assert(next.isSome());
 
   ulong[] unwrapped = next.get();
@@ -44,9 +44,9 @@ unittest {
   ulong[] start = [1, 2, 3];
   immutable ulong initLen = start.length;
 
-  assert(setPrepend(start, 3).isNone());
+  assert(setPrecat(start, 3).isNone());
 
-  auto next = setPrepend(start, 0);
+  auto next = setPrecat(start, 0);
   assert(next.isSome());
 
   ulong[] unwrapped = next.get();
