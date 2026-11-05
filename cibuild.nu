@@ -1,4 +1,3 @@
-#!/opt/hostedtoolcache/nushell/0.108/x64/nu
 
 def gather [path: string, ext: string] {
   let absp = $path | path expand
@@ -19,3 +18,5 @@ def main [opt: string] {
 }
 
 #which nu
+
+#/opt/hostedtoolcache/nushell/0.108/x64/nu
