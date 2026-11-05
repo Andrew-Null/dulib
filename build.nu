@@ -1,7 +1,9 @@
 #!/run/current-system/sw/bin/nu
 
 def gather [path: string, ext: string] {
-  return (^gather.nu $path $ext | from nuon)
+  let absp = $path | path expand
+  let toglob = $"($absp)/**/*.($ext)"
+  return (glob $toglob)
 }
 
 const arg0 = path self;
