@@ -23,4 +23,4 @@ jobs:
       with:
         version: '0.108.0'
     - name: Run tests
-      run: ./cibuild.nu test
+      run: nu build.nu test

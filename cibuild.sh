@@ -1,1 +1,0 @@
-nu ./build.nu
