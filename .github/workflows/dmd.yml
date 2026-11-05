@@ -19,5 +19,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+    - uses: hustcer/setup-nu@v3
+      with:
+        version: '0.108.0'
     - name: Run tests
       run: ./build.nu test
