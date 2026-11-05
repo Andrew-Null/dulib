@@ -4,12 +4,14 @@ import dtmo = dulib.types.monads.option;
 import das = dulib.array.search;
 
 
-dtmo.Option!(T[]) setAppend(T)(T[] ary, T neo) {
+dtmo.Option!(T[]) setPostcat(T)(T[] ary, T neo) {
   alias Ret = typeof(return);
   alias CFG = das.SearchConfig!(T).ChangeMode!(das.SearchMode.Contains);
   if (das.arraySearch!(CFG)(ary, neo)) {
     return Ret.make();
   }
+
+
 
   return Ret.make(ary ~ neo);
 }
@@ -28,7 +30,7 @@ unittest {
 
 }
 
-dtmo.Option!(T[]) setPrepend(T)(T[] ary, T neo) {
+dtmo.Option!(T[]) setPrecat(T)(T[] ary, T neo) {
   alias Ret = typeof(return);
   alias CFG = das.SearchConfig!(T).ChangeMode!(das.SearchMode.Contains);
   if (das.arraySearch!(CFG)(ary, neo)) {
