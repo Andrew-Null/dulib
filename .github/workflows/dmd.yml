@@ -18,9 +18,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v7
     - uses: hustcer/setup-nu@v3
       with:
         version: '0.108.0'
+    - uses: dlang-community/setup-dlang@v2
     - name: Run tests
       run: nu build.nu test
