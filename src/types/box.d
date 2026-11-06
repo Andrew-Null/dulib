@@ -6,6 +6,8 @@ class Box(B, ulong MIN_SIZE = 0, dt.Mutability M = dt.Mut) {
   static assert (B.sizeof >= MIN_SIZE);
   dt.AsMut!(B, M).Out boxed;
 
+  @disable this();
+
   this(B b) {
     this.boxed = b;
   }
