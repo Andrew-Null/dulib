@@ -1,6 +1,7 @@
 module dulib.types.box;
 
 import dt = dulib.types;
+import dtmo = dulib.types.monads.option;
 
 class Box(B, ulong MIN_SIZE = 0, dt.Mutability M = dt.Mut) {
   static assert (B.sizeof >= MIN_SIZE);
@@ -20,6 +21,28 @@ bool delegate(B) eqBox(B)(B fixed) {
   return &equal;
 }
 
+struct AnonPtr {
+  immutable(string) mangle;
+  void* ptr;
+
+  private this(void* p, string m) {
+    this.mangle = m;
+    this.ptr = p;
+  }
+
+  public static AnonPtr make(T)(T* data) {
+    return AnonPtr(cast(void*)data, T.mangleof);
+  }
+
+  public dtmo.Option!(T) deref(T)() {
+    alias Ret = typeof(return);
+    if (T.mangleof == this.mangle) {
+      return Ret.make(*(cast(T*)this.ptr));
+    }
+    return Ret.make();
+  }
+}
+
 unittest {
   auto test = eqBox!(ulong)(0);
   assert(test(0));
@@ -29,4 +52,22 @@ unittest {
 unittest {
   auto boxed = new Box!(ulong)(0);
   assert(boxed.boxed == 0);
+}
+
+unittest {
+  ulong test = 0;
+  AnonPtr ptr = AnonPtr.make!(ulong)(&test);
+
+  auto zero = ptr.deref!(ulong)();
+  assert(zero.isSome());
+  assert(zero.get() == 0);
+
+  test = 1;
+  auto one = ptr.deref!(ulong)();
+  assert(one.isSome());
+  assert(one.get() == 1);
+
+  auto invalid = ptr.deref!(byte);
+  assert(invalid.isNone());
+
 }
