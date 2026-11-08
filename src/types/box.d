@@ -23,7 +23,7 @@ bool delegate(B) eqBox(B)(B fixed) {
 
 struct AnonPtr {
   immutable(string) mangle;
-  void* ptr;
+  private void* ptr;
 
   private this(void* p, string m) {
     this.mangle = m;
@@ -40,6 +40,14 @@ struct AnonPtr {
       return Ret.make(*(cast(T*)this.ptr));
     }
     return Ret.make();
+  }
+
+  public dt.Confirmation set(T)(T* data) {
+    if (T.mangleof == this.mangle) {
+      this.ptr = data;
+      return dt.Confirmation.Success;
+    }
+    return dt.Confirmation.Failure;
   }
 }
 
@@ -70,4 +78,9 @@ unittest {
   auto invalid = ptr.deref!(byte);
   assert(invalid.isNone());
 
+}
+
+unittest {
+  assert(string.sizeof == 16);
+  assert(ulong[].sizeof == 16);
 }
