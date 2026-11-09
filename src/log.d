@@ -20,7 +20,7 @@ struct LogDestination {
 }
 
 class Logger(string[] CATS) {
-  static bool isCategory(string cat) {
+  pure static bool isCategory(string cat) {
     alias CFG = das.SearchConfig!(string).ChangeMode!(das.SearchMode.Contains);
     return das.arraySearch!(CFG)(CATS, cat);
   }

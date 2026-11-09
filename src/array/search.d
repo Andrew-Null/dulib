@@ -149,7 +149,7 @@ private SOT!(T, SO).Out getOutput(T, SearchOutput SO, dt.Mutability M)(dt.AsMut!
   }
 }
 
-CFG.Return arraySearch(CFG)(CFG.InputArray ary, CFG.InputTarget target, CFG.INth nth = CFG.DefaultNth) in {
+pure CFG.Return arraySearch(CFG)(CFG.InputArray ary, CFG.InputTarget target, CFG.INth nth = CFG.DefaultNth) in {
   static if (CFG.TARGETING != SearchTargeting.Multi) {
     static if (CFG.MODE != SearchMode.Nth) {
       assert(nth == 0); // Don't need it, don't touch it
