@@ -2,6 +2,7 @@ module dulib.log;
 
 import sio = std.stdio;
 import das = dulib.array.search;
+import dtp = dulib.types.pair;
 
 void errPrint(string txt) {
   sio.stderr.write(txt);
@@ -44,6 +45,15 @@ class Logger(string[] CATS) {
     alias CFG = das.SearchConfig!(string).ChangeMode!(das.SearchMode.Contains);
     return das.arraySearch!(CFG)(CATS, cat);
   }
+
+  pure void logln(string cat)(string msg) {
+    static assert(isCategory(cat));
+    logs[cat] ~= msg;
+  }
+
+  //private void flushln(string cat, string log)
+  //private void flushcat
+  //private void flush
 }
 
 unittest {
@@ -54,4 +64,6 @@ unittest {
   }
 
   TestLog tl = new TestLog();
+  tl.logln!("info")("info log msg");
+  //tl.logln!("invalid")("shouldn't compile");
 }
