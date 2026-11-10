@@ -3,7 +3,6 @@ module dulib.array.search;
 import dt = dulib.types;
 import dl = dulib.logic;
 import dtmo = dulib.types.monads.option;
-import dtb = dulib.types.box;
 
 enum SearchMode {
   Once, First, Count, Nth, All, Contains
@@ -51,29 +50,6 @@ private template SearchTarget(T, SearchTargeting ST = SearchTargeting.Single, dt
     alias Out = bool delegate(T);
   }
 
-}
-
-pure T[] flatten(T)(T[][] unflat) {
-  if (unflat.length == 0) {
-    return [];
-  } else if (unflat.length == 1) {
-    return unflat[0];
-  }
-
-  T[] ret = unflat[0];
-  for (ulong dex = 1; dex < unflat.length; dex++) {
-    ret ~= unflat[dex];
-  }
-  return ret;
-}
-
-unittest {
-  ulong[][] unflat = [[0,1,2],[3],[4,5],[6,7,8,9],[],[10]];
-  ulong[] flat = flatten(unflat);
-
-  foreach(i,n; flat) {
-    assert(i == n);
-  }
 }
 
 struct SearchConfig(T, SearchMode M = SearchMode.First,
