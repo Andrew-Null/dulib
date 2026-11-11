@@ -42,12 +42,12 @@ struct Option(S, dt.Mutability M = dt.Const) {
     }
   }
   
-  pure nothrow public bool isSome() //would put contract on both, but concerned about endless recursion
+  const nothrow public bool isSome() //would put contract on both, but concerned about endless recursion
        out(s; s == !isNone()) do {
     return this.tag == OpTag.Some;
   }
 
-  pure nothrow public bool isNone() {
+  const nothrow public bool isNone() {
     return this.tag == OpTag.None;
   }
 
