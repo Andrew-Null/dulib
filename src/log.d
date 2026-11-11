@@ -12,6 +12,8 @@ void errPrintln(string txt) {
   sio.stderr.writeln(txt);
 }
 
+private:
+
 enum LogOutput {
   File, StdOut, StdErr, None
 }

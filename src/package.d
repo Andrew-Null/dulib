@@ -16,3 +16,4 @@ public pure nothrow uint parseUInt(string num) in(dulib.charify.isNumber(num)) {
 
   return ret;
 }
+
