@@ -3,6 +3,9 @@ module dulib.log;
 import sio = std.stdio;
 import das = dulib.array.search;
 import dtp = dulib.types.pair;
+import dtf = dulib.types.filesystem;
+import dtmo = dulib.types.monads.option;
+import dl = dulib.logic;
 
 void errPrint(string txt) {
   sio.stderr.write(txt);
@@ -14,12 +17,30 @@ void errPrintln(string txt) {
 
 private:
 
-enum LogOutput {
+private alias LO = LogOut;
+enum LogOutput : LO {
+  StdOut = LO.StdOut, StdErr = LO.StdErr, None = LO.None
+}
+
+private enum LogOut {
   File, StdOut, StdErr, None
 }
 
 struct LogDestination {
-  alias LO = LogOutput;
+  immutable(LO) tag;
+  alias LFile = immutable(dtmo.Option!(dtf.Path));
+  LFile logFile;
+
+  pure invariant {
+    bool ft = this.tag == LO.File; // file tag
+    bool some = this.logFile.isSome();
+    assert(dl.imply(ft, some) && dl.imply(!ft, !some));
+  }
+
+  pure private this(LogOutput lo) {
+    this.tag = lo;
+    this.logFile = LFile.make();
+  }
 }
 
 class Logger(string[] CATS) {
