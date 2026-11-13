@@ -26,6 +26,10 @@ private enum LogOut {
   File, StdOut, StdErr, None
 }
 
+enum WriteMode : string {
+  Overrite = "w", Append = "a", Write = "w+", Create = "+"
+}
+
 struct LogDestination {
   immutable(LO) tag;
   alias LFile = immutable(dtmo.Option!(dtf.Path));
