@@ -26,13 +26,14 @@ private enum LogOut {
   File, StdOut, StdErr, None
 }
 
-enum WriteMode : string {
-  Overrite = "w", Append = "a", Write = "w+", Create = "+"
+enum WriteMode : immutable(char[2]) {
+  Overrite = ['w', '='], Append = ['a', '='], Write = ['w', '+'], Create = ['c', '+']
 }
 
 struct LogDestination {
+  alias Self = LogDestination;
   immutable(LO) tag;
-  alias LFile = immutable(dtmo.Option!(dtf.Path));
+  alias LFile = immutable(dtmo.Option!(dtp.Duo!(dtf.Path, WriteMode, "path", "mode")));
   LFile logFile;
 
   pure invariant {
@@ -44,6 +45,18 @@ struct LogDestination {
   pure private this(LogOutput lo) {
     this.tag = lo;
     this.logFile = LFile.make();
+  }
+
+  pure static Self makeOut() {
+    return Self(LogOutput.StdOut);
+  }
+
+  pure static Self makeErr() {
+    return Self(LogOutput.StdErr);
+  }
+
+  pure static Self makeNone() {
+    return Self(LogOutput.None);
   }
 }
 
