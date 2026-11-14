@@ -33,7 +33,8 @@ enum WriteMode : immutable(char[2]) {
 struct LogDestination {
   alias Self = LogDestination;
   immutable(LO) tag;
-  alias LFile = immutable(dtmo.Option!(dtp.Duo!(dtf.Path, WriteMode, "path", "mode")));
+  private alias FileCfg = dtp.Duo!(dtf.Path, WriteMode, "path", "mode");
+  alias LFile = immutable(dtmo.Option!(FileCfg));
   LFile logFile;
 
   pure invariant {
@@ -47,6 +48,11 @@ struct LogDestination {
     this.logFile = LFile.make();
   }
 
+  pure private this(LFile lf) {
+    this.logFile = lf;
+    this.tag = LO.File;
+  }
+
   pure static Self makeOut() {
     return Self(LogOutput.StdOut);
   }
@@ -57,6 +63,20 @@ struct LogDestination {
 
   pure static Self makeNone() {
     return Self(LogOutput.None);
+  }
+
+  pure static Self makeFile(dtf.Path file, WriteMode mode) {
+    return Self(LFile.make(FileCfg(file, mode)));
+  }
+
+  pure static dtmo.Option!(Self) makeFile(string file, WriteMode mode) {
+    alias Ret = typeof(return);
+    auto path = dtf.Path.make(file);
+    if (path.isNone()) {
+      return Ret.make();
+    }
+
+    return Ret.make(LogDestination.makeFile(path.get(), mode));
   }
 }
 
