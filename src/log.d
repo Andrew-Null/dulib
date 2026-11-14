@@ -99,6 +99,8 @@ struct LogDestination {
       } break;
       case LO.None: {} break;
       case LO.File: {
+        // This is terrible for writing a bunch of lines
+        // TODO: better multi line writing/peristent handle
         assert(this.logFile.isSome());
         string path = this.logFile.get().path.getText();
         auto opened = sio.File(path);
@@ -126,7 +128,7 @@ class Logger(string[] CATS) {
     return ret;
   }
 
-  this() {
+  this(LogDestination[CATS.length] dsts) {
     logs = initLogs();
   }
 
@@ -152,7 +154,8 @@ unittest {
     assert(TestLog.isCategory(cat));
   }
 
-  TestLog tl = new TestLog();
+  alias LD = LogDestination;
+  TestLog tl = new TestLog([LD.makeNone(), LD.makeNone(), LD.makeNone()]);
   tl.logln!("info")("info log msg");
   //tl.logln!("invalid")("shouldn't compile");
 }
