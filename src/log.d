@@ -1,6 +1,8 @@
 module dulib.log;
 
 import sio = std.stdio;
+import sf = std.file;
+
 import das = dulib.array.search;
 import dtp = dulib.types.pair;
 import dtf = dulib.types.filesystem;
@@ -65,18 +67,45 @@ struct LogDestination {
     return Self(LogOutput.None);
   }
 
-  pure static Self makeFile(dtf.Path file, WriteMode mode) {
-    return Self(LFile.make(FileCfg(file, mode)));
+  static dtmo.Option!(Self) makeFile(dtf.Path file, WriteMode mode) {
+    alias Ret = typeof(return);
+    immutable(string) path = file.getText();
+
+    if (mode[1] == '=' && !sf.exists(path)) {
+      return Ret.make();
+    }
+
+    return Ret.make(Self(LFile.make(FileCfg(file, mode))));
   }
 
-  pure static dtmo.Option!(Self) makeFile(string file, WriteMode mode) {
+  static dtmo.Option!(Self) makeFile(string file, WriteMode mode) {
     alias Ret = typeof(return);
     auto path = dtf.Path.make(file);
+
     if (path.isNone()) {
       return Ret.make();
     }
 
-    return Ret.make(LogDestination.makeFile(path.get(), mode));
+    return LogDestination.makeFile(path.get(), mode);
+  }
+
+  void writeln(string s) {
+    final switch (this.tag) {
+      case LO.StdOut: {
+        sio.writeln(s);
+      } break;
+      case LO.StdErr: {
+        sio.stderr.writeln(s);
+      } break;
+      case LO.None: {} break;
+      case LO.File: {
+        assert(this.logFile.isSome());
+        string path = this.logFile.get().path.getText();
+        auto opened = sio.File(path);
+        opened.writeln(s);
+        opened.close();
+      }
+    }
   }
 }
 

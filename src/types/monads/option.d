@@ -51,7 +51,7 @@ struct Option(S, dt.Mutability M = dt.Const) {
     return this.tag == OpTag.None;
   }
 
-  pure public S get() in (this.isSome()) {return cast(S) this.just;}
+  const public S get() in (this.isSome()) {return cast(S) this.just;}
 				 
   public Option!(O, N) bind(O, dt.Mutability N = M)(O function(S) somef) {
     alias Ret = Option!(O, N);
