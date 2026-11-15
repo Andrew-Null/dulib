@@ -17,7 +17,7 @@ void errPrintln(string txt) {
   sio.stderr.writeln(txt);
 }
 
-private:
+private: //temporary
 
 private alias LO = LogOut;
 enum LogOutput : LO {
@@ -30,6 +30,30 @@ private enum LogOut {
 
 enum WriteMode : immutable(char[2]) {
   Overrite = ['w', '='], Append = ['a', '='], Write = ['w', '+'], Create = ['c', '+']
+}
+
+struct FlushTimer {
+  immutable(ulong) max;
+  ulong current = 0;
+
+  this(ulong mx) {
+    this.max = mx;
+    this.current = mx;
+  }
+
+  bool tick() in (this.current > 0) out (r; this.current > 0) {
+      this.current -= 1; //tick
+
+    if (this.current > 0) {
+      return false;
+    }
+
+    assert(this.current == 0);
+
+    //reset
+    this.current = this.max;
+    return true;
+  }
 }
 
 struct LogDestination {
