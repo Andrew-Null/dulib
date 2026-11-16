@@ -32,7 +32,22 @@ enum WriteMode : immutable(char[2]) {
   Overrite = ['w', '='], Append = ['a', '='], Write = ['w', '+'], Create = ['c', '+']
 }
 
-struct FlushTimer {
+private struct FlushTimer {
+  /*
+    Using with Logger would force Logger to be constantly impure . . . Using
+    this as originally intended likely would require a lot of comptime/meta
+    programming which I am obviously capable of (see arraySearch), ultimately
+    integration is a project for a later date, especially if I want both
+    timers either master xor per category
+
+    Integration is going to have to wait as I want some sort of time stamping
+    capability, either time or order first
+
+    Not to mention the question of making this multi threaded safe . . . which
+    may mean a rework . . . time will tell
+
+    TODO (11-16-26): integration
+  */
   immutable(ulong) max;
   ulong current = 0;
 
