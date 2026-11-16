@@ -138,6 +138,7 @@ struct LogDestination {
 class Logger(string[] CATS) {
   alias Logs = string[][string];
   Logs logs;
+  LogDestination[CATS.length] outs;
 
   invariant {
     assert(logs.length == CATS.length);
@@ -153,7 +154,8 @@ class Logger(string[] CATS) {
   }
 
   this(LogDestination[CATS.length] dsts) {
-    logs = initLogs();
+    this.logs = initLogs();
+    this.outs = dsts;
   }
 
   pure static bool isCategory(string cat) {
@@ -163,15 +165,43 @@ class Logger(string[] CATS) {
 
   pure void logln(string cat)(string msg) {
     static assert(isCategory(cat));
-    logs[cat] ~= msg;
+    this.logs[cat] ~= msg;
   }
 
-  //private void flushln(string cat, string log)
-  //private void flushcat
-  //private void flush
+  private void flushln(ulong cat, string log) in (cat < CATS.length) {
+    this.outs[cat].writeln(CATS[cat] ~ ": " ~ log);
+  }
+  private ulong _flushcat(ulong cat) in (cat < CATS.length) {
+    const curcat = this.logs[CATS[cat]];
+    ulong ret = curcat.length;
+    foreach(log; curcat) {
+      this.flushln(cat, log);
+    }
+
+    this.logs[CATS[cat]] = [];
+    return ret;
+  }
+
+  ulong flush() {
+    ulong ret = 0;
+    foreach(i, cat; CATS) {
+      ret += this._flushcat(i);
+    }
+    return ret;
+  }
+
+  ulong flushcat(string CAT)() {
+    static assert(isCategory(CAT));
+    alias CFG = das.SearchConfig!(string).ChangeMode!(das.SearchMode.Once);
+    enum auto dex = das.arraySearch!(CFG)(CATS, CAT);
+    static assert(dex.isSome());
+    enum ulong index = dex.get();
+    return this._flushcat(index);
+  }
 }
 
 unittest {
+  import ss = std.string;
   enum string[] testCats = ["info", "debug", "err"];
   alias TestLog = Logger!(testCats);
   foreach(cat; testCats) {
@@ -182,4 +212,16 @@ unittest {
   TestLog tl = new TestLog([LD.makeNone(), LD.makeNone(), LD.makeNone()]);
   tl.logln!("info")("info log msg");
   //tl.logln!("invalid")("shouldn't compile");
+  assert(tl.flushcat!("info")());
+
+
+  tl.logln!("info")("log msg 2");
+  tl.logln!("info")("log 3");
+
+  assert(tl.flushcat!("debug")() == 0);
+
+  tl.logln!("err")("crashing");
+
+  ulong flushed = tl.flush();
+  assert(flushed == 3, ss.format("%d", flushed));
 }
