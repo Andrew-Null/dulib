@@ -150,6 +150,27 @@ struct LogDestination {
   }
 }
 
+enum Stamp {
+  Time, Order, None
+}
+
+struct Log {
+  private alias LStamp = dtp.Duo!(Stamp, ulong, "tag", "value");
+
+
+  immutable(string) log;
+  immutable(LStamp) stamp;
+
+  invariant {
+    assert(dl.imply(this.stamp.tag == Stamp.None, this.stamp.value == 0));
+  }
+
+  pure private this(string l, Stamp t, ulong v = 0) {
+    this.log = l;
+    this.stamp = LStamp(t, v);
+  }
+}
+
 class Logger(string[] CATS) {
   alias Logs = string[][string];
   Logs logs;
