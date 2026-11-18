@@ -172,11 +172,22 @@ struct Log {
 }
 
 class Logger(string[] CATS, bool ORDER = true) {
+  static assert(CATS.length > 0);
+
   alias Logs = string[][string];
   Logs logs;
   LogDestination[CATS.length] outs;
   static if (ORDER) {
     ulong[CATS.length] stamps;
+
+    pure ulong orderSum() {
+      ulong ret = stamps[0];
+      for(ulong dex = 1; dex < CATS.length; dex++) {
+        ret += stamps[dex];
+      }
+
+      return ret;
+    }
   }
 
   invariant {
@@ -203,6 +214,7 @@ class Logger(string[] CATS, bool ORDER = true) {
   }
 
   pure static private ulong getCatDex(string cat) out(d; d < CATS.length) {
+    assert(isCategory(cat));
     alias CFG = das.SearchConfig!(string).ChangeMode!(das.SearchMode.Once);
     auto once = das.arraySearch!(CFG)(CATS, cat);
     assert(once.isSome());
