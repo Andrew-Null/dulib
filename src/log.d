@@ -171,10 +171,13 @@ struct Log {
   }
 }
 
-class Logger(string[] CATS) {
+class Logger(string[] CATS, bool ORDER = true) {
   alias Logs = string[][string];
   Logs logs;
   LogDestination[CATS.length] outs;
+  static if (ORDER) {
+    ulong[CATS.length] stamps;
+  }
 
   invariant {
     assert(logs.length == CATS.length);
@@ -199,9 +202,25 @@ class Logger(string[] CATS) {
     return das.arraySearch!(CFG)(CATS, cat);
   }
 
+  pure static private ulong getCatDex(string cat) out(d; d < CATS.length) {
+    alias CFG = das.SearchConfig!(string).ChangeMode!(das.SearchMode.Once);
+    auto once = das.arraySearch!(CFG)(CATS, cat);
+    assert(once.isSome());
+    return once.get();
+  }
+
   pure void logln(string cat)(string msg) {
     static assert(isCategory(cat));
+
+    static if (ORDER) {
+      enum ulong index = getCatDex(cat);
+    }
+
     this.logs[cat] ~= msg;
+
+    static if (ORDER) {
+      stamps[index] += 1;
+    }
   }
 
   private void flushln(ulong cat, string log) in (cat < CATS.length) {
