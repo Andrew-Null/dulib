@@ -177,6 +177,7 @@ class Logger(string[] CATS, bool ORDER = true) {
   alias Logs = string[][string];
   Logs logs;
   LogDestination[CATS.length] outs;
+  Stamp[CATS.length] stampTags;
   static if (ORDER) {
     ulong[CATS.length] stamps;
 
@@ -192,6 +193,10 @@ class Logger(string[] CATS, bool ORDER = true) {
 
   invariant {
     assert(logs.length == CATS.length);
+
+    foreach(tag; this.stampTags) {
+      assert(tag == Stamp.Time); // starting simple
+    }
   }
 
   private static pure Logs initLogs() {
@@ -203,9 +208,20 @@ class Logger(string[] CATS, bool ORDER = true) {
     return ret;
   }
 
-  this(LogDestination[CATS.length] dsts) {
+  private static Stamp[CATS.length] defStamps() {
+    typeof(return) ret;
+
+    for(ulong dex = 0; dex < CATS.length; dex++) {
+      ret[dex] = Stamp.Time;
+    }
+
+    return ret;
+  }
+
+  this(LogDestination[CATS.length] dsts, Stamp[CATS.length] st = defStamps()) {
     this.logs = initLogs();
     this.outs = dsts;
+    this.stampTags = st;
   }
 
   pure static bool isCategory(string cat) {
