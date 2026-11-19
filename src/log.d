@@ -159,10 +159,27 @@ enum Stamp {
   Time, Order, None
 }
 
+struct UnixStamp {
+  private alias TStamp = long;
+  TStamp time;
+
+  static TStamp getTime() {
+    return sds.Clock.currTime().toUnixTime!(TStamp);
+  }
+
+  pure private this(TStamp t) {
+    this.time = t;
+  }
+
+  static public UnixStamp make() {
+    return UnixStamp(UnixStamp.getTime());
+  }
+
+}
+
 struct Log {
   private alias OStamp = dtp.Duo!(ulong, ulong, "category", "all");
-  private alias TStamp = long;
-  private alias LStamp = dtmm.MaybEith!(TStamp, OStamp);
+  private alias LStamp = dtmm.MaybEith!(UnixStamp.TStamp, OStamp);
 
 
   immutable(string) log;
@@ -173,16 +190,17 @@ struct Log {
     this.stamp = LStamp.makeRight(OStamp(c, a));
   }
 
-  private this(string l, Stamp t) in (t != Stamp.Order) {
+  pure private this(string l, UnixStamp us) {
     this.log = l;
-    if (t == Stamp.None) {
-      this.stamp = LStamp.makeNeither();
-    } else {
-      this.stamp = LStamp.makeLeft(sds.Clock.currTime().toUnixTime!(TStamp)());
-    }
+    this.stamp = LStamp.makeLeft(us.time);
   }
 
-  bool checkStampType(Stamp exp) {
+  pure private this(string l) {
+    this.log = l;
+    this.stamp = LStamp.makeNeither();
+  }
+
+  pure bool checkStampType(Stamp exp) {
     final switch (exp) {
       case Stamp.None: return this.stamp.isNeither();
       case Stamp.Time: return this.stamp.isLeft();
