@@ -2,12 +2,17 @@ module dulib.log;
 
 import sio = std.stdio;
 import sf = std.file;
+import ct = core.time;
+import sdd = std.datetime.date;
+import sds = std.datetime.systime;
 
 import das = dulib.array.search;
 import dtp = dulib.types.pair;
 import dtf = dulib.types.filesystem;
 import dtmo = dulib.types.monads.option;
 import dl = dulib.logic;
+import dtme = dulib.types.monads.either;
+import dtmm = dulib.types.monads.maybeith;
 
 void errPrint(string txt) {
   sio.stderr.write(txt);
@@ -155,19 +160,35 @@ enum Stamp {
 }
 
 struct Log {
-  private alias LStamp = dtp.Duo!(Stamp, ulong, "tag", "value");
+  private alias OStamp = dtp.Duo!(ulong, ulong, "category", "all");
+  private alias TStamp = long;
+  private alias LStamp = dtmm.MaybEith!(TStamp, OStamp);
 
 
   immutable(string) log;
   immutable(LStamp) stamp;
 
-  invariant {
-    assert(dl.imply(this.stamp.tag == Stamp.None, this.stamp.value == 0));
+  pure private this(string l, ulong c, ulong a) in (a >= c) {
+    this.log = l;
+    this.stamp = LStamp.makeRight(OStamp(c, a));
   }
 
-  pure private this(string l, Stamp t, ulong v = 0) {
+  private this(string l, Stamp t) in (t != Stamp.Order) {
     this.log = l;
-    this.stamp = LStamp(t, v);
+    if (t == Stamp.None) {
+      this.stamp = LStamp.makeNeither();
+    } else {
+      this.stamp = LStamp.makeLeft(sds.Clock.currTime().toUnixTime!(TStamp)());
+    }
+  }
+
+  bool checkStampType(Stamp exp) {
+    final switch (exp) {
+      case Stamp.None: return this.stamp.isNeither();
+      case Stamp.Time: return this.stamp.isLeft();
+      case Stamp.Order: return this.stamp.isRight();
+    }
+
   }
 }
 

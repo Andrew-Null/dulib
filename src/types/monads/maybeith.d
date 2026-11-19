@@ -42,15 +42,15 @@ struct MaybEith(L, R, dt.Mutability MU = dt.IMut) {
     return Self(Tag.Neither);
   }
 
-  public pure bool isLeft() {
+  public const bool isLeft() {
     return this.tag == Tag.Left;
   }
 
-  public pure bool isRight() {
+  public const bool isRight() {
     return this.tag == Tag.Right;
   }
 
-  public pure bool isNeither() {
+  public const bool isNeither() {
     return this.tag == Tag.Neither;
   }
 
