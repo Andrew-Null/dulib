@@ -253,7 +253,7 @@ class Logger(string[] CATS, bool ORDER = true) {
     return ret;
   }
 
-  private static Stamp[CATS.length] defStamps() {
+  private static Stamp[CATS.length] defaultStamps() {
     typeof(return) ret;
 
     for(ulong dex = 0; dex < CATS.length; dex++) {
@@ -263,7 +263,7 @@ class Logger(string[] CATS, bool ORDER = true) {
     return ret;
   }
 
-  this(LogDestination[CATS.length] dsts, Stamp[CATS.length] st = defStamps()) {
+  this(LogDestination[CATS.length] dsts, Stamp[CATS.length] st = defaultStamps()) {
     this.logs = initLogs();
     this.outs = dsts;
     this.stampTags = st;
