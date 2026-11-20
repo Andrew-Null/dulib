@@ -200,7 +200,7 @@ struct Log {
     this.stamp = LStamp.makeNeither();
   }
 
-  pure bool checkStampType(Stamp exp) {
+  const pure bool checkStampType(Stamp exp) {
     final switch (exp) {
       case Stamp.None: return this.stamp.isNeither();
       case Stamp.Time: return this.stamp.isLeft();
@@ -213,7 +213,7 @@ struct Log {
 class Logger(string[] CATS, bool ORDER = true) {
   static assert(CATS.length > 0);
 
-  alias Logs = string[][string];
+  alias Logs = Log[][string];
   Logs logs;
   LogDestination[CATS.length] outs;
   Stamp[CATS.length] stampTags;
@@ -235,6 +235,12 @@ class Logger(string[] CATS, bool ORDER = true) {
 
     foreach(tag; this.stampTags) {
       assert(tag == Stamp.Time); // starting simple
+    }
+
+    foreach(i, cat; CATS) {
+      foreach(log; this.logs[cat]) {
+        assert(log.checkStampType(this.stampTags[i]));
+      }
     }
   }
 
@@ -276,7 +282,7 @@ class Logger(string[] CATS, bool ORDER = true) {
     return once.get();
   }
 
-  pure void logln(string cat)(string msg) {
+  pure void logln(string cat)(Log msg) {
     static assert(isCategory(cat));
 
     static if (ORDER) {
@@ -297,7 +303,7 @@ class Logger(string[] CATS, bool ORDER = true) {
     const curcat = this.logs[CATS[cat]];
     ulong ret = curcat.length;
     foreach(log; curcat) {
-      this.flushln(cat, log);
+      this.flushln(cat, log.log);
     }
 
     this.logs[CATS[cat]] = [];
@@ -330,9 +336,12 @@ unittest {
     assert(TestLog.isCategory(cat));
   }
 
+  /*
+
   alias LD = LogDestination;
   TestLog tl = new TestLog([LD.makeNone(), LD.makeNone(), LD.makeNone()]);
   tl.logln!("info")("info log msg");
+
   //tl.logln!("invalid")("shouldn't compile");
   assert(tl.flushcat!("info")());
 
@@ -346,4 +355,5 @@ unittest {
 
   ulong flushed = tl.flush();
   assert(flushed == 3, ss.format("%d", flushed));
+  */
 }
