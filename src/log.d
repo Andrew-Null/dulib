@@ -13,6 +13,7 @@ import dtmo = dulib.types.monads.option;
 import dl = dulib.logic;
 import dtme = dulib.types.monads.either;
 import dtmm = dulib.types.monads.maybeith;
+import dt = dulib.types;
 
 void errPrint(string txt) {
   sio.stderr.write(txt);
@@ -282,18 +283,41 @@ class Logger(string[] CATS, bool ORDER = true) {
     return once.get();
   }
 
-  pure void logln(string cat)(Log msg) {
+  pure bool incOrder(string cat)() out(r; r == ORDER) {
     static assert(isCategory(cat));
-
     static if (ORDER) {
       enum ulong index = getCatDex(cat);
-    }
-
-    this.logs[cat] ~= msg;
-
-    static if (ORDER) {
       stamps[index] += 1;
+      return true;
     }
+    return false;
+  }
+
+  private alias Conf = dt.Confirmation;
+
+  pure Conf logln(string cat, Stamp tag)(Log msg) if (tag != Stamp.Time) {
+    enum ulong index = getCatDex(cat);
+    if (this.stampTags[index] != tag) {
+      return Conf.Failure;
+    }
+
+    static if (tag == Stamp.Order) {
+      this.logs[cat] ~= Log(msg, stamps[index], this.orderSum());
+    } else {
+      this.logs[cat] ~= Log(msg);
+    }
+
+    incOrder!(cat)();
+    return Conf.Success;
+  }
+
+  void logln(string cat, Stamp tag)(Log msg) if (tag == Stamp.Time) {
+    enum ulong index = getCatDex(cat);
+    if (this.stampTags[index] != tag) {
+      return Conf.Failure;
+    }
+
+    this.logs[cat] ~= Log(msg, UnixStamp.make());
   }
 
   private void flushln(ulong cat, string log) in (cat < CATS.length) {
@@ -336,6 +360,7 @@ unittest {
     assert(TestLog.isCategory(cat));
   }
 
+  //pragma(msg, "fix/enable tests");
   /*
 
   alias LD = LogDestination;
