@@ -54,11 +54,11 @@ struct MaybEith(L, R, dt.Mutability MU = dt.IMut) {
     return this.tag == Tag.Neither;
   }
 
-  public pure L getLeft() in(this.isLeft()) {
+  public const pure L getLeft() in(this.isLeft()) {
     return this.data.left;
   }
 
-  public pure R getRight() in(this.isRight()) {
+  public const pure R getRight() in(this.isRight()) {
     return this.data.right;
   }
 

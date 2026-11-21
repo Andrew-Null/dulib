@@ -5,6 +5,7 @@ import sf = std.file;
 import ct = core.time;
 import sdd = std.datetime.date;
 import sds = std.datetime.systime;
+import ss = std.string;
 
 import das = dulib.array.search;
 import dtp = dulib.types.pair;
@@ -182,6 +183,12 @@ struct Log {
   private alias OStamp = dtp.Duo!(ulong, ulong, "category", "all");
   private alias LStamp = dtmm.MaybEith!(UnixStamp.TStamp, OStamp);
 
+  invariant {
+    if (this.stamp.isRight()) {
+      OStamp os = this.stamp.getRight();
+      assert(os.all >= os.category);
+    }
+  }
 
   immutable(string) log;
   immutable(LStamp) stamp;
@@ -199,6 +206,18 @@ struct Log {
   pure private this(string l) {
     this.log = l;
     this.stamp = LStamp.makeNeither();
+  }
+
+  private pure string format(string cat) {
+    if (this.checkStampType(Stamp.None)) {
+      return ss.format("%s: %s", cat, this.log);
+    } else if (this.checkStampType(Stamp.Time)) {
+      return ss.format("%s (%u): %s", cat, this.stamp.getLeft(), this.log);
+    } else {
+      assert(this.checkStampType(Stamp.Order));
+      OStamp ostamp = this.stamp.getRight();
+      return ss.format("%s (%u %u): %s", cat, ostamp.all, ostamp.category, this.log);
+    }
   }
 
   const pure bool checkStampType(Stamp exp) {
