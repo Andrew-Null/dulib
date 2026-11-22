@@ -369,6 +369,19 @@ class Logger(string[] CATS, bool ORDER = true) {
     enum ulong index = dex.get();
     return this._flushcat(index);
   }
+
+  version(unittest) {
+    pure string[] reviewCat(string CAT)() {
+      static assert(isCategory(CAT));
+      string[] ret;
+
+      foreach(log; this.logs[CAT]) {
+        ret ~= log.format(CAT);
+      }
+
+      return ret;
+    }
+  }
 }
 
 unittest {
@@ -379,7 +392,7 @@ unittest {
     assert(TestLog.isCategory(cat));
   }
 
-  //pragma(msg, "fix/enable tests");
+  //pragma(msg, "fix/enable tests"); // Disabled for commits
   /*
 
   alias LD = LogDestination;
