@@ -253,9 +253,6 @@ class Logger(string[] CATS, bool ORDER = true) {
   invariant {
     assert(logs.length == CATS.length);
 
-    foreach(tag; this.stampTags) {
-      assert(tag == Stamp.Time); // starting simple
-    }
 
     foreach(i, cat; CATS) {
       foreach(log; this.logs[cat]) {
@@ -314,7 +311,7 @@ class Logger(string[] CATS, bool ORDER = true) {
 
   private alias Conf = dt.Confirmation;
 
-  pure Conf logln(string cat, Stamp tag)(Log msg) if (tag != Stamp.Time) {
+  pure Conf logln(string cat, Stamp tag)(string msg) if (tag != Stamp.Time) {
     enum ulong index = getCatDex(cat);
     if (this.stampTags[index] != tag) {
       return Conf.Failure;
@@ -330,7 +327,7 @@ class Logger(string[] CATS, bool ORDER = true) {
     return Conf.Success;
   }
 
-  void logln(string cat, Stamp tag)(Log msg) if (tag == Stamp.Time) {
+  void logln(string cat, Stamp tag)(string msg) if (tag == Stamp.Time) {
     enum ulong index = getCatDex(cat);
     if (this.stampTags[index] != tag) {
       return Conf.Failure;
@@ -393,24 +390,24 @@ unittest {
   }
 
   //pragma(msg, "fix/enable tests"); // Disabled for commits
-  /*
+
 
   alias LD = LogDestination;
-  TestLog tl = new TestLog([LD.makeNone(), LD.makeNone(), LD.makeNone()]);
-  tl.logln!("info")("info log msg");
+  TestLog tl = new TestLog([LD.makeNone(), LD.makeNone(), LD.makeNone()], [Stamp.Order, Stamp.None, Stamp.None]);
+  assert(tl.logln!("info", Stamp.Order)("info log msg"));
 
   //tl.logln!("invalid")("shouldn't compile");
   assert(tl.flushcat!("info")());
 
 
-  tl.logln!("info")("log msg 2");
-  tl.logln!("info")("log 3");
+  assert(tl.logln!("info", Stamp.Order)("log msg 2"));
+  assert(tl.logln!("info", Stamp.Order)("log 3"));
 
   assert(tl.flushcat!("debug")() == 0);
 
-  tl.logln!("err")("crashing");
+  assert(tl.logln!("err", Stamp.None)("crashing"));
 
   ulong flushed = tl.flush();
   assert(flushed == 3, ss.format("%d", flushed));
-  */
+
 }
