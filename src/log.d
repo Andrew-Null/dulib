@@ -163,7 +163,7 @@ enum Stamp {
 
 struct UnixStamp {
   private alias TStamp = long;
-  TStamp time;
+  immutable(TStamp) time;
 
   static TStamp getTime() {
     return sds.Clock.currTime().toUnixTime!(TStamp);
@@ -273,8 +273,12 @@ class Logger(string[] CATS, bool ORDER = true) {
   private static Stamp[CATS.length] defaultStamps() {
     typeof(return) ret;
 
+    Stamp dflt = Stamp.Time;
+
+    version(unittest) dflt = Stamp.Order;
+
     for(ulong dex = 0; dex < CATS.length; dex++) {
-      ret[dex] = Stamp.Time;
+      ret[dex] = dflt;
     }
 
     return ret;
@@ -393,7 +397,7 @@ unittest {
 
 
   alias LD = LogDestination;
-  TestLog tl = new TestLog([LD.makeNone(), LD.makeNone(), LD.makeNone()], [Stamp.Order, Stamp.None, Stamp.None]);
+  TestLog tl = new TestLog([LD.makeNone(), LD.makeNone(), LD.makeNone()], [Stamp.Order, Stamp.Order, Stamp.Order]);
   assert(tl.logln!("info", Stamp.Order)("info log msg"));
 
   //tl.logln!("invalid")("shouldn't compile");
@@ -403,9 +407,14 @@ unittest {
   assert(tl.logln!("info", Stamp.Order)("log msg 2"));
   assert(tl.logln!("info", Stamp.Order)("log 3"));
 
+  string[] forReview = tl.reviewCat!("info")();
+  assert(forReview[0] == "info (1 1): log msg 2");
+  assert(forReview[1] == "info (2 2): log 3");
+
   assert(tl.flushcat!("debug")() == 0);
 
-  assert(tl.logln!("err", Stamp.None)("crashing"));
+  assert(tl.logln!("err", Stamp.Order)("crashing"));
+  assert(tl.reviewCat!("err")()[0] == "err (3 0): crashing");
 
   ulong flushed = tl.flush();
   assert(flushed == 3, ss.format("%d", flushed));
