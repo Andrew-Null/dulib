@@ -208,7 +208,7 @@ struct Log {
     this.stamp = LStamp.makeNeither();
   }
 
-  private pure string format(string cat) {
+  private const pure string format(string cat) {
     if (this.checkStampType(Stamp.None)) {
       return ss.format("%s: %s", cat, this.log);
     } else if (this.checkStampType(Stamp.Time)) {
@@ -347,7 +347,7 @@ class Logger(string[] CATS, bool ORDER = true) {
     const curcat = this.logs[CATS[cat]];
     ulong ret = curcat.length;
     foreach(log; curcat) {
-      this.flushln(cat, log.log);
+      this.flushln(cat, log.format(CATS[cat]));
     }
 
     this.logs[CATS[cat]] = [];
@@ -393,7 +393,6 @@ unittest {
     assert(TestLog.isCategory(cat));
   }
 
-  //pragma(msg, "fix/enable tests"); // Disabled for commits
 
 
   alias LD = LogDestination;
