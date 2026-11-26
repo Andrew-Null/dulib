@@ -2,8 +2,6 @@ module dulib.log;
 
 import sio = std.stdio;
 import sf = std.file;
-import ct = core.time;
-import sdd = std.datetime.date;
 import sds = std.datetime.systime;
 import ss = std.string;
 
@@ -12,7 +10,6 @@ import dtp = dulib.types.pair;
 import dtf = dulib.types.filesystem;
 import dtmo = dulib.types.monads.option;
 import dl = dulib.logic;
-import dtme = dulib.types.monads.either;
 import dtmm = dulib.types.monads.maybeith;
 import dt = dulib.types;
 
