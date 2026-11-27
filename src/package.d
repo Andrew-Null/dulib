@@ -1,13 +1,9 @@
 module dulib;
 
 import sio = std.stdio;
+import dc = dulib.charify;
 
-public import dulib.logic;
-public import dulib.paths;
-public import dulib.charify;
-
-
-public pure nothrow uint parseUInt(string num) in(dulib.charify.isNumber(num)) {
+public pure nothrow uint parseUInt(string num) in(dc.isNumber(num)) {
   uint ret = 0;
 
   foreach (char c; num) {

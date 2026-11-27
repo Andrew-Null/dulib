@@ -3,9 +3,7 @@ module dulib.paths;
 import sf = std.file;
 import sp = std.path;
 
-import istr = dulib.types.identring;
 import dt = dulib.types;
-import dtmt = dulib.types.monads.trither;
 import dtmo = dulib.types.monads.option;
 import dtf = dulib.types.filesystem;
 

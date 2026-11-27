@@ -1,6 +1,5 @@
 import sc = std.concurrency;
 
-import dtmo = dulib.types.monads.option;
 import dt = dulib.types;
 
 private alias HasRet = bool;
